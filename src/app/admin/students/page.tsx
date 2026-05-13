@@ -13,11 +13,8 @@ import {
   QrCode, 
   FileText,
   Filter,
-  MoreVertical,
   CheckCircle2,
-  Loader2,
   Sparkles,
-  BookOpen,
   Edit3
 } from 'lucide-react'
 import StudentAddModal from '@/components/admin/StudentAddModal'
@@ -38,6 +35,17 @@ export default function StudentsPage() {
   const [selectedStudentForEdit, setSelectedStudentForEdit] = useState<any>(null)
   const supabase = createClient()
 
+  const fetchStudents = async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('students')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (data) setStudents(data)
+    setLoading(false)
+  }
+
   useEffect(() => {
     const initializeData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -57,17 +65,6 @@ export default function StudentsPage() {
     }
     initializeData()
   }, [])
-
-  const fetchStudents = async () => {
-    setLoading(true)
-    const { data } = await supabase
-      .from('students')
-      .select('*')
-      .order('name', { ascending: true })
-
-    if (data) setStudents(data)
-    setLoading(false)
-  }
 
   const deleteStudent = async (id: string) => {
     if (!confirm('정말 학생 정보를 삭제하시겠습니까? 관련 데이터가 모두 소멸됩니다.')) return

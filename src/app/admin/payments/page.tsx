@@ -5,17 +5,12 @@ import { createClient } from '@/utils/supabase/client'
 import { 
   CreditCard, 
   Calendar, 
-  User, 
   MessageSquare, 
   Copy, 
   CheckCircle2, 
   AlertCircle,
-  Loader2,
-  ChevronRight,
-  Filter,
-  Search,
   Sparkles,
-  Send
+  ArrowUpRight
 } from 'lucide-react'
 
 export default function PaymentManagementPage() {
@@ -38,7 +33,7 @@ export default function PaymentManagementPage() {
       setLoading(false)
     }
     fetchStudents()
-  }, [])
+  }, [supabase])
 
   const generateReminder = async (student: any, tone: string) => {
     setGenerating(true)

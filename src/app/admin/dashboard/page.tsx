@@ -4,19 +4,14 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { 
   Users, 
-  CheckCircle, 
   MessageSquare, 
-  TrendingUp, 
   Clock, 
   ChevronRight,
   ArrowUpRight,
   Activity,
-  Calendar,
   Sparkles,
   ShieldCheck,
   AlertTriangle,
-  Copy,
-  Check,
   CheckCircle2,
   Instagram,
   Globe,
@@ -151,7 +146,7 @@ export default function DashboardPage() {
     }
 
     fetchDashboardData()
-  }, [])
+  }, [supabase])
 
   const handleApprove = async (reportId: string) => {
     try {
@@ -300,7 +295,7 @@ export default function DashboardPage() {
                     <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">AI 감정 필터링 완료</span>
                   </div>
                   <p className="text-sm font-bold text-gray-700 leading-relaxed italic mb-6">
-                    "{fb.filtered_feedback || fb.parent_feedback}"
+                    &quot;{fb.filtered_feedback || fb.parent_feedback}&quot;
                   </p>
                   <div className="flex justify-between items-center pt-6 border-t border-gray-200/50">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">From: {fb.students?.name} 학부모님</p>
@@ -343,7 +338,7 @@ export default function DashboardPage() {
                 <p className="text-[10px] text-blue-300 font-black uppercase tracking-[0.2em]">AI 원비 수납 보조</p>
               </div>
               <p className="text-xs font-bold leading-relaxed text-gray-500 italic">
-                "AI가 {stats.unpaidCount}명의 미납 학생을 위한 맞춤 안내 문구를 준비했습니다."
+                &quot;AI가 {stats.unpaidCount}명의 미납 학생을 위한 맞춤 안내 문구를 준비했습니다.&quot;
               </p>
             </div>
           </section>

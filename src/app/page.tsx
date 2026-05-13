@@ -116,7 +116,7 @@ export default function LandingPage() {
                       <div className="h-full w-3/4 bg-blue-600"></div>
                     </div>
                     <p className="text-sm font-medium text-gray-400 leading-relaxed">
-                      "최근 민수의 수학 성취도는 상위 5%에 진입했습니다. AI가 분석한 다음 단계 학습은 미적분 심화 과정입니다."
+                      &quot;최근 민수의 수학 성취도는 상위 5%에 진입했습니다. AI가 분석한 다음 단계 학습은 미적분 심화 과정입니다.&quot;
                     </p>
                   </div>
                   <div className="pt-8 border-t border-white/5 flex items-center justify-between">

@@ -13,9 +13,27 @@ export default function SuperAdminPage() {
   const supabase = createClient()
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuthorizationAndFetch()
-  }, [])
+  const fetchAcademies = async () => {
+    // We need to use a query that bypasses RLS if possible, 
+    // but since role='dev' has dev_academy_access, we can just select all
+    const { data, error } = await supabase
+      .from('academies')
+      .select(`
+        *,
+        profiles!academies_owner_id_fkey (
+          email,
+          full_name
+        )
+      `)
+      .order('created_at', { ascending: false })
+    
+    if (data) {
+      setAcademies(data)
+    } else {
+      console.error('Failed to fetch academies', error)
+    }
+    setIsLoading(false)
+  }
 
   const checkAuthorizationAndFetch = async () => {
     setIsLoading(true)
@@ -38,27 +56,9 @@ export default function SuperAdminPage() {
     }
   }
 
-  const fetchAcademies = async () => {
-    // We need to use a query that bypasses RLS if possible, 
-    // but since role='dev' has dev_academy_access, we can just select all
-    const { data, error } = await supabase
-      .from('academies')
-      .select(`
-        *,
-        profiles!academies_owner_id_fkey (
-          email,
-          full_name
-        )
-      `)
-      .order('created_at', { ascending: false })
-    
-    if (data) {
-      setAcademies(data)
-    } else {
-      console.error('Failed to fetch academies', error)
-    }
-    setIsLoading(false)
-  }
+  useEffect(() => {
+    checkAuthorizationAndFetch()
+  }, [])
 
   const handleApprove = async (id: string, currentPlan: string) => {
     if (!confirm('해당 학원의 결제를 승인하고 활성화하시겠습니까?')) return

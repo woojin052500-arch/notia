@@ -29,12 +29,6 @@ export default function CounselingModal({ isOpen, onClose, student, planType }: 
 
   const plan = getPlanLimits(planType)
 
-  useEffect(() => {
-    if (isOpen && student && plan.hasAiCounseling) {
-      generateScript()
-    }
-  }, [isOpen, student])
-
   const generateScript = async () => {
     setLoading(true)
     try {
@@ -53,6 +47,12 @@ export default function CounselingModal({ isOpen, onClose, student, planType }: 
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (isOpen && student && plan.hasAiCounseling) {
+      generateScript()
+    }
+  }, [isOpen, student])
 
   const handleCopy = () => {
     navigator.clipboard.writeText(script)

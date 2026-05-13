@@ -18,28 +18,6 @@ export default function AttendanceKioskPage() {
   const [error, setError] = useState<string | null>(null)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
 
-  useEffect(() => {
-    scannerRef.current = new Html5QrcodeScanner(
-      'reader',
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-      },
-      /* verbose= */ false
-    )
-
-    scannerRef.current.render(onScanSuccess, onScanFailure)
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(error => {
-          console.error('Failed to clear scanner', error)
-        })
-      }
-    }
-  }, [])
-
   async function onScanSuccess(decodedText: string) {
     if (loading || scanResult) return
     
@@ -76,6 +54,28 @@ export default function AttendanceKioskPage() {
   function onScanFailure(error: any) {
     // Quietly ignore scan failures
   }
+
+  useEffect(() => {
+    scannerRef.current = new Html5QrcodeScanner(
+      'reader',
+      { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+      },
+      /* verbose= */ false
+    )
+
+    scannerRef.current.render(onScanSuccess, onScanFailure)
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(error => {
+          console.error('Failed to clear scanner', error)
+        })
+      }
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-6 font-sans">

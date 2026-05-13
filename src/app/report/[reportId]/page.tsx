@@ -49,7 +49,7 @@ export default function PublicReportPage() {
       setLoading(false)
     }
     fetchData()
-  }, [reportId])
+  }, [reportId, supabase])
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -184,7 +184,7 @@ export default function PublicReportPage() {
                 <span className="text-xs font-black text-gray-900 uppercase tracking-widest">Teacher's Note</span>
               </div>
               <p className="text-[#1A1A1A] leading-relaxed text-xl font-medium italic">
-                "{report.ai_content || "오늘의 학습 내용이 정리 중입니다."}"
+                &quot;{report.ai_content || "오늘의 학습 내용이 정리 중입니다."}&quot;
               </p>
             </div>
           </section>
@@ -228,9 +228,9 @@ export default function PublicReportPage() {
 
                   <div className="bg-white/5 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/10 shadow-inner group hover:bg-white/10 transition-all duration-500">
                     <p className="text-lg sm:text-xl font-medium leading-relaxed text-blue-50 italic">
-                      <span className="text-blue-400 text-3xl font-serif mr-2">"</span>
+                      <span className="text-blue-400 text-3xl font-serif mr-2">&quot;</span>
                       {report.prediction_content}
-                      <span className="text-blue-400 text-3xl font-serif ml-2">"</span>
+                      <span className="text-blue-400 text-3xl font-serif ml-2">&quot;</span>
                     </p>
                   </div>
 
