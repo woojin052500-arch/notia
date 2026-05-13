@@ -15,8 +15,7 @@ import {
   Loader2,
   ChevronRight,
   ArrowRight,
-  ShieldCheck,
-  Instagram
+  ShieldCheck
 } from 'lucide-react'
 import Link from 'next/link'
 
