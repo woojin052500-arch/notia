@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { messages } = await req.json()
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 1000,
       system: "당신은 학원 운영 및 학생 관리를 돕는 전문 비서 'Notia AI'입니다. 원장님과 선생님들께 친절하고 전문적인 조언을 제공하세요.",
       messages: messages

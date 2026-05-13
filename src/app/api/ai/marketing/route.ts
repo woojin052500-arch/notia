@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     `
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-3-5-sonnet-20240620',
       max_tokens: 1000,
       system: systemPrompt,
       messages: [
@@ -31,7 +31,14 @@ export async function POST(req: Request) {
       ]
     })
 
-    const result = JSON.parse(response.content[0].type === 'text' ? response.content[0].text : '{}')
+    let result = {}
+    if (response.content[0].type === 'text') {
+      try {
+        result = JSON.parse(response.content[0].text)
+      } catch (e) {
+        console.error('JSON Parse Error:', e)
+      }
+    }
     return NextResponse.json(result)
 
   } catch (error: any) {

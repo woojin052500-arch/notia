@@ -33,9 +33,9 @@ export async function POST(req: Request) {
       }
     `
 
-    // --- High Performance AI (2026 Edition) ---
+    // --- High Performance AI ---
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6', 
+      model: 'claude-3-5-sonnet-20240620', 
       max_tokens: 1500,
       temperature: 0.7,
       system: systemPrompt,
