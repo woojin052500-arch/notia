@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Notia OS - 프리미엄 학원 운영 자동화 솔루션",
     description: "선생님의 정성은 그대로, 행정은 지능형으로. 대한민국 No.1 학원 운영 시스템 Notia OS.",
-    url: "https://notia.vercel.app", // Adjust if domain is different
+    url: "https://notia-rouge.vercel.app/",
     siteName: "Notia OS",
     locale: "ko_KR",
     type: "website",
