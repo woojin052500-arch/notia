@@ -18,10 +18,14 @@ import {
   Search,
   Command,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  BookOpen,
+  Menu,
+  X as CloseIcon
 } from 'lucide-react'
 import CommandCenter from '@/components/admin/CommandCenter'
 import PricingModal from '@/components/admin/PricingModal'
+import UserTutorial from '@/components/admin/UserTutorial'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -32,6 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(true)
   const [isPricingOpen, setIsPricingOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -88,7 +93,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: '학생 관리', href: '/admin/students', icon: Users, minPlan: 'starter' },
     { name: '리포트 관리', href: '/admin/reports', icon: MessageSquare, minPlan: 'starter' },
     { name: '마케팅 센터', href: '/admin/marketing', icon: Instagram, minPlan: 'pro' },
-    { name: '수납 및 결제', href: '/admin/payments', icon: CreditCard, minPlan: 'pro' },
+    { name: '수납 및 결제', href: '/admin/payments', icon: CreditCard, minPlan: 'starter' },
+    { name: '교재 관리', href: '/admin/textbooks', icon: BookOpen, minPlan: 'starter' },
     { name: '프랜차이즈', href: '/admin/franchise', icon: Globe, minPlan: 'premium' },
     { name: '설정', href: '/admin/settings', icon: Settings, minPlan: 'starter' },
   ]
@@ -98,9 +104,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F8F9FA]">
+    <div className="flex min-h-screen bg-[#F8F9FA] relative">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[140] lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0">
+      <aside className={`fixed inset-y-0 left-0 w-72 bg-white border-r border-gray-100 flex flex-col h-screen z-[150] lg:sticky lg:top-0 transition-transform duration-300 lg:translate-x-0 ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <div className="p-8">
           <div className="flex items-center gap-3 mb-10">
             <div className="w-10 h-10 bg-[#0066FF] rounded-xl flex items-center justify-center">
@@ -135,6 +151,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
+                  onClick={() => setIsSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all ${
                     isActive
                       ? 'bg-blue-50 text-[#0066FF]'
@@ -170,11 +187,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content */}
       <main className="flex-1 flex flex-col">
         {/* Top Header */}
-        <header className="h-20 bg-white border-b border-gray-100 px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-[#999999] font-medium">
-            <span>Admin</span>
-            <span className="text-gray-300">/</span>
-            <span className="text-[#1A1A1A]">{menuItems.find(i => i.href === pathname)?.name || '기타'}</span>
+        <header className="h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-[100]">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 -ml-2 text-gray-400 hover:text-gray-900 lg:hidden"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <div className="hidden sm:flex items-center gap-2 text-sm text-[#999999] font-medium">
+              <span>Admin</span>
+              <span className="text-gray-300">/</span>
+              <span className="text-[#1A1A1A]">{menuItems.find(i => i.href === pathname)?.name || '기타'}</span>
+            </div>
           </div>
           <div className="flex items-center gap-6">
             {/* Search Trigger */}
@@ -192,7 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <Link 
               href="/attendance/scan" 
-              className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-full font-black text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 mr-4"
+              className="hidden sm:flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-full font-black text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 mr-4"
             >
               <QrCode className="w-4 h-4" />
               출결 스캐너 실행
@@ -201,8 +226,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Bell className="w-6 h-6" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
-              <div className="text-right">
+            <div className="flex items-center gap-3 pl-4 md:pl-6 border-l border-gray-100">
+              <div className="text-right hidden xs:block">
                 <p className="text-sm font-bold text-[#1A1A1A]">
                   {user?.full_name || authUser?.user_metadata?.full_name || '원장 선생님'}
                 </p>
@@ -221,7 +246,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {children}
         </div>
       </main>
@@ -232,6 +257,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         onClose={() => setIsPricingOpen(false)} 
         isForce={!isSubscribed}
       />
+      <UserTutorial />
     </div>
   )
 }

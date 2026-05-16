@@ -13,7 +13,8 @@ import {
   Settings,
   ArrowRight,
   Sparkles,
-  Zap
+  Zap,
+  BookOpen
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -33,6 +34,7 @@ export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
     { name: '리포트 관리', description: 'AI 학습 리포트 생성 및 전송', href: '/admin/reports', icon: MessageSquare, category: 'Management' },
     { name: '마케팅 센터', description: '인스타그램 카드뉴스 자동 생성', href: '/admin/marketing', icon: Instagram, category: 'Growth' },
     { name: '수납 및 결제', description: '원비 미납 확인 및 수납 관리', href: '/admin/payments', icon: CreditCard, category: 'Management' },
+    { name: '교재 관리', description: '학원 교재 및 학생 교재 지급 관리', href: '/admin/textbooks', icon: BookOpen, category: 'Management' },
     { name: '프랜차이즈', description: '전국 지점 통합 관리 모드', href: '/admin/franchise', icon: Globe, category: 'Expansion' },
     { name: '설정', description: '학원 정보 및 알림 설정', href: '/admin/settings', icon: Settings, category: 'System' },
     { name: '출결 스캐너', description: '실시간 QR 출결 키오스크 실행', href: '/attendance/kiosk', icon: Zap, category: 'Quick Action' },

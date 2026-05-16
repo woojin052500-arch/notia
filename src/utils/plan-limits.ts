@@ -14,20 +14,20 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   mini: {
     name: 'Mini',
     maxStudents: 10,
-    hasAiReport: false,
-    hasAiAdvancedReport: false,
-    hasAiCounseling: false,
+    hasAiReport: true,
+    hasAiAdvancedReport: true,
+    hasAiCounseling: true,
     hasAiMarketing: false,
-    hasEmotionFiltering: false
+    hasEmotionFiltering: true
   },
   starter: {
     name: 'Starter',
     maxStudents: 30,
     hasAiReport: true,
-    hasAiAdvancedReport: false,
-    hasAiCounseling: false,
+    hasAiAdvancedReport: true,
+    hasAiCounseling: true,
     hasAiMarketing: false,
-    hasEmotionFiltering: false
+    hasEmotionFiltering: true
   },
   basic: {
     name: 'Basic',
@@ -36,7 +36,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     hasAiAdvancedReport: true,
     hasAiCounseling: true,
     hasAiMarketing: false,
-    hasEmotionFiltering: false
+    hasEmotionFiltering: true
   },
   professional: {
     name: 'Professional',
@@ -45,7 +45,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     hasAiAdvancedReport: true,
     hasAiCounseling: true,
     hasAiMarketing: true,
-    hasEmotionFiltering: false
+    hasEmotionFiltering: true
   },
   premium: {
     name: 'Premium',

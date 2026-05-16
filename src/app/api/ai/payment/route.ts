@@ -31,21 +31,35 @@ export async function POST(req: Request) {
       .limit(1)
       .single()
 
+    const { data: unpaidTextbooks } = await supabase
+      .from('student_textbooks')
+      .select('textbook_name, textbook_price')
+      .eq('student_id', studentId)
+      .eq('is_billed', false)
+
+    const textbooksText = unpaidTextbooks && unpaidTextbooks.length > 0 
+      ? `추가 청구될 교재비 내역: ${unpaidTextbooks.map(tb => `${tb.textbook_name}(${tb.textbook_price}원)`).join(', ')}`
+      : '추가 교재비 없음';
+
     // AI Generate Payment Reminder
     const systemPrompt = `
       ?�신?� ?�원 ?�영 ?�문 ?�담가?�니?? 
       ?��?모님�?결제 ?�내 메시지�?보내???�는?? ?�무 ?�무?�이지 ?�게 ?�생??최근 ?�습 ?�과�?�?��?�며 ?�연?�럽�?결제�??�내?�세??
       
-      [???�정]
-      - polite: 매우 ?�중?�고 ?�의 바른 ?�조
-      - friendly: 친근?�고 ?�뜻???�조
-      - professional: 깔끔?�고 명확???�조
+      당신은 학원 운영 전문 상담가입니다. 
+      학부모님께 결제 안내 메시지를 보내려 합니다. 정중하면서도 따뜻하게 최근 학습 결과를 언급하며 자연스럽게 결제를 안내하세요.
+      
+      [어조]
+      - polite: 매우 정중하고 예의 바른 어조
+      - friendly: 친근하고 따뜻한 어조
+      - professional: 깔끔하고 명확한 어조
       
       [조건]
-      1. 반드???�생??최근 ?�습 ?�용("${recentReport?.ai_content || '?�습 ?�도가 매우 좋습?�다'}")???�급?�며 ?�?��? ?�작?�세??
-      2. ?�연?�럽�??�비 결제??${student?.next_payment_date})???�내?�세??
-      3. 마�?막에 ?�금 계좌 ?�보(NH?�협 3516376760453)�??�함?�세??
-      4. 면책 조항?� ?�함?��? 마세??
+      1. 반드시 학생의 최근 학습 내용("${recentReport?.ai_content || '학습 태도가 매우 좋습니다'}")을 언급하며 대화를 시작하세요.
+      2. 자연스럽게 원비 결제일(${student?.next_payment_date})을 안내하세요.
+      3. ${textbooksText !== '추가 교재비 없음' ? `교재비 청구 내역이 있습니다. 원비와 함께 합산하여 다음 내역을 반드시 안내하세요: ${textbooksText}` : '원비만 안내하세요.'}
+      4. 마지막에 입금 계좌 정보(NH농협 3516376760453)를 포함하세요.
+      5. 면책 조항은 포함하지 마세요.
     `
 
     const response = await anthropic.messages.create({

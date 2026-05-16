@@ -147,8 +147,8 @@ export default function NewReportPage() {
       <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center mb-8">
         <Sparkles className="w-10 h-10 text-blue-600" />
       </div>
-      <h2 className="text-3xl font-black text-gray-900 mb-4">AI 리포트 기능이 제한되어 있습니다</h2>
-      <p className="text-gray-400 font-bold max-w-sm mb-12">Mini 요금제는 기본 출결 관리 전용입니다. AI 리포트를 사용하시려면 요금제를 Starter 이상으로 업그레이드해 주세요.</p>
+      <h2 className="text-3xl font-black text-gray-900 mb-4">기능 사용이 일시적으로 제한되었습니다</h2>
+      <p className="text-gray-400 font-bold max-w-sm mb-12">현재 계정 상태를 확인해 주세요. 지속적인 이용을 위해 요금제 확인이 필요합니다.</p>
       <Link href="/admin/dashboard" className="px-12 py-5 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-700 transition-all">
         요금제 업그레이드 하러가기
       </Link>
@@ -196,7 +196,7 @@ export default function NewReportPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Input Section */}
         <div className="space-y-6">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
+          <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-8">
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-3xl border border-gray-100">
               <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-100">
                 {student?.name?.charAt(0)}
@@ -267,7 +267,7 @@ export default function NewReportPage() {
 
         {/* Right: Result Section */}
         <div className="space-y-6">
-          <div className={`bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm transition-all h-full flex flex-col ${aiContent ? 'ring-2 ring-blue-500 shadow-blue-100' : ''}`}>
+          <div className={`bg-white p-6 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-sm transition-all h-full flex flex-col ${aiContent ? 'ring-2 ring-blue-500 shadow-blue-100' : ''}`}>
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
                 <CheckCircle2 className={`w-6 h-6 ${aiContent ? 'text-blue-600' : 'text-gray-200'}`} />

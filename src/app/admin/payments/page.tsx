@@ -10,7 +10,8 @@ import {
   CheckCircle2, 
   AlertCircle,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  ChevronLeft
 } from 'lucide-react'
 
 export default function PaymentManagementPage() {
@@ -72,6 +73,13 @@ export default function PaymentManagementPage() {
       .update({ next_payment_date: nextMonth.toISOString().split('T')[0] })
       .eq('id', student.id)
     
+    // Mark textbooks as billed
+    await supabase
+      .from('student_textbooks')
+      .update({ is_billed: true })
+      .eq('student_id', student.id)
+      .eq('is_billed', false)
+    
     if (!error) {
       setStudents(prev => prev.map(s => 
         s.id === student.id ? { ...s, next_payment_date: nextMonth.toISOString().split('T')[0] } : s
@@ -98,9 +106,9 @@ export default function PaymentManagementPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
         {/* Left: Interactive Student List */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className={`lg:col-span-1 space-y-6 ${selectedStudent ? 'hidden lg:block' : 'block'}`}>
           <div className="flex justify-between items-center px-4">
             <h2 className="text-xl font-black text-gray-900 flex items-center gap-3">
               <Calendar className="w-5 h-5 text-blue-600" />
@@ -173,11 +181,19 @@ export default function PaymentManagementPage() {
         </div>
 
         {/* Right: AI Guidance Console */}
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${selectedStudent ? 'block' : 'hidden lg:block'}`}>
           {selectedStudent ? (
-            <div className="bg-white rounded-[4rem] border border-gray-100 shadow-sm p-12 space-y-10 animate-in fade-in slide-in-from-right-8 duration-700 relative overflow-hidden">
+            <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] border border-gray-100 shadow-sm p-6 md:p-12 space-y-8 md:space-y-10 animate-in fade-in slide-in-from-right-8 duration-700 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -mr-32 -mt-32 opacity-50"></div>
               
+              <button 
+                onClick={() => setSelectedStudent(null)}
+                className="flex items-center gap-2 text-gray-400 hover:text-gray-900 font-bold mb-4 lg:hidden"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                목록으로 돌아가기
+              </button>
+
               <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex items-center gap-6">
                   <div className="w-20 h-20 bg-emerald-50 rounded-[2.5rem] flex items-center justify-center group">

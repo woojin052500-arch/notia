@@ -66,7 +66,7 @@ export default function AttendanceScanPage() {
       // 1. Student identification by QR Token
       const { data: student, error: sError } = await supabase
         .from('students')
-        .select('*, academies(name)')
+        .select('*, academies(name, min_attendance_minutes)')
         .eq('qr_token', decodedText)
         .single()
 
@@ -107,6 +107,15 @@ export default function AttendanceScanPage() {
         resultMsg = `${student.name} 학생, 등원 처리가 완료되었습니다.`
       } else if (!latestAttendance.check_out) {
         // Record exists but no check-out yet -> Check-out
+        // Minimum Attendance Time Check
+        const minMinutes = student.academies?.min_attendance_minutes || 50;
+        const checkInTime = new Date(latestAttendance.check_in);
+        const elapsedMinutes = (now.getTime() - checkInTime.getTime()) / 60000;
+        
+        if (elapsedMinutes < minMinutes) {
+          throw new Error(`최소 학습 시간(${minMinutes}분)이 지나지 않아 하원할 수 없습니다. (현재 ${Math.floor(elapsedMinutes)}분 경과)`);
+        }
+
         await supabase
           .from('attendance')
           .update({ 

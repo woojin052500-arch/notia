@@ -13,7 +13,9 @@ import {
   AlertCircle,
   Calendar,
   Clock,
-  Edit3
+  Edit3,
+  BookOpen,
+  Plus
 } from 'lucide-react'
 
 interface StudentEditModalProps {
@@ -35,6 +37,12 @@ export default function StudentEditModal({ isOpen, onClose, onSuccess, student }
   const [error, setError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
 
+  // Textbooks
+  const [availableTextbooks, setAvailableTextbooks] = useState<any[]>([])
+  const [studentTextbooks, setStudentTextbooks] = useState<any[]>([])
+  const [selectedTextbookId, setSelectedTextbookId] = useState('')
+  const [dispensing, setDispensing] = useState(false)
+
   const supabase = createClient()
 
   useEffect(() => {
@@ -46,8 +54,59 @@ export default function StudentEditModal({ isOpen, onClose, onSuccess, student }
       setMemo(student.memo || '')
       setNextPaymentDate(student.next_payment_date || '')
       setTravelTime(student.estimated_travel_time?.toString() || '15')
+      
+      fetchTextbooks(student.academy_id, student.id)
     }
   }, [student])
+
+  const fetchTextbooks = async (academyId: string, studentId: string) => {
+    // Get all textbooks for academy
+    const { data: tbData } = await supabase
+      .from('textbooks')
+      .select('*')
+      .eq('academy_id', academyId)
+    
+    setAvailableTextbooks(tbData || [])
+
+    // Get student's textbooks
+    const { data: stData } = await supabase
+      .from('student_textbooks')
+      .select('*')
+      .eq('student_id', studentId)
+      .order('given_at', { ascending: false })
+    
+    setStudentTextbooks(stData || [])
+  }
+
+  const handleDispenseTextbook = async () => {
+    if (!selectedTextbookId || !student) return
+    setDispensing(true)
+
+    const textbook = availableTextbooks.find(tb => tb.id === selectedTextbookId)
+    if (!textbook) return
+
+    try {
+      const { error: dispenseError } = await supabase
+        .from('student_textbooks')
+        .insert([{
+          student_id: student.id,
+          textbook_id: textbook.id,
+          academy_id: student.academy_id,
+          textbook_name: textbook.name,
+          textbook_price: textbook.price,
+          is_billed: false
+        }])
+
+      if (dispenseError) throw dispenseError
+      
+      await fetchTextbooks(student.academy_id, student.id)
+      setSelectedTextbookId('')
+    } catch (err: any) {
+      alert('교재 지급 중 오류: ' + err.message)
+    } finally {
+      setDispensing(false)
+    }
+  }
 
   if (!isOpen || !student) return null
 
@@ -91,7 +150,7 @@ export default function StudentEditModal({ isOpen, onClose, onSuccess, student }
       ></div>
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header */}
         <div className="p-8 pb-4 flex justify-between items-center">
           <div>
@@ -111,7 +170,7 @@ export default function StudentEditModal({ isOpen, onClose, onSuccess, student }
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-8 pt-4 space-y-6 custom-scrollbar">
           {/* Input Fields */}
           <div className="space-y-4">
             <div>
@@ -209,6 +268,57 @@ export default function StudentEditModal({ isOpen, onClose, onSuccess, student }
                 />
                 <span className="text-sm font-bold text-green-700">분 소요 예정</span>
               </div>
+            </div>
+
+            {/* Textbook Section */}
+            <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
+              <label className="block text-sm font-black text-blue-700 mb-3 ml-1 uppercase tracking-wider flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                교재 지급 및 내역
+              </label>
+              
+              <div className="flex gap-2 mb-4">
+                <select
+                  value={selectedTextbookId}
+                  onChange={(e) => setSelectedTextbookId(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-white border-none rounded-2xl focus:ring-2 focus:ring-blue-600 transition-all font-bold text-gray-900 shadow-sm"
+                >
+                  <option value="">교재를 선택하세요</option>
+                  {availableTextbooks.map(tb => (
+                    <option key={tb.id} value={tb.id}>{tb.name} ({tb.price.toLocaleString()}원)</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleDispenseTextbook}
+                  disabled={!selectedTextbookId || dispensing}
+                  className="px-4 py-3 bg-blue-600 text-white rounded-2xl font-black flex items-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50"
+                >
+                  {dispensing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                  지급
+                </button>
+              </div>
+
+              {studentTextbooks.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <ul className="divide-y divide-gray-50 max-h-40 overflow-y-auto">
+                    {studentTextbooks.map(st => (
+                      <li key={st.id} className="p-3 flex items-center justify-between text-sm">
+                        <div>
+                          <p className="font-bold text-gray-900">{st.textbook_name}</p>
+                          <p className="text-xs text-gray-400">{new Date(st.given_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-blue-600">{st.textbook_price.toLocaleString()}원</p>
+                          <p className={`text-[10px] font-black uppercase ${st.is_billed ? 'text-green-500' : 'text-orange-500'}`}>
+                            {st.is_billed ? '청구완료' : '미청구'}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 
