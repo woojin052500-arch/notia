@@ -84,10 +84,10 @@ export default function StudentsPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600/20 border border-blue-500/30 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-400 mb-6">
               <Sparkles className="w-3 h-3" />
-              Intelligence Roster
+              스마트 인명부
             </div>
             <h1 className="text-5xl font-black text-white tracking-tight mb-4">학원 학생 인명부</h1>
-            <p className="text-gray-400 font-bold">인공지능이 분석한 학생들의 학습 상태와 출결을 한눈에 관리하세요.</p>
+            <p className="text-gray-400 font-bold">지능형 관리 엔진이 분석한 학생들의 학습 상태와 출결을 한눈에 관리하세요.</p>
           </div>
           {students.length >= plan.maxStudents ? (
             <Link 
@@ -152,7 +152,7 @@ export default function StudentsPage() {
                 <button 
                   onClick={() => setSelectedStudentForCounseling(student)}
                   className="p-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                  title="AI 상담 가이드"
+                  title="상담 안내 가이드"
                 >
                   <Sparkles className="w-4 h-4" />
                 </button>
@@ -204,7 +204,7 @@ export default function StudentsPage() {
                 className="py-4 bg-white border border-gray-100 text-gray-900 font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
               >
                 <FileText className="w-4 h-4 text-blue-600" />
-                AI Report
+                학습 리포트
               </Link>
             </div>
           </div>

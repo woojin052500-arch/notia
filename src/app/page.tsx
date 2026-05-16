@@ -55,10 +55,10 @@ export default function LandingPage() {
           </div>
           <h1 className="text-7xl md:text-[9rem] font-black tracking-[-0.04em] leading-[0.9] mb-12">
             학원의 격을<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20 italic">AI로 완성하다.</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20 italic">지능형으로 완성하다.</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-400 font-medium max-w-3xl mx-auto mb-16 leading-relaxed">
-            단순한 관리 툴을 넘어, 인공지능이 학부모 상담부터 성적 분석, <br className="hidden md:block" />
+            단순한 관리 툴을 넘어, 스마트 엔진이 학부모 상담부터 성적 분석, <br className="hidden md:block" />
             마케팅까지 책임지는 대한민국 유일의 프리미엄 학원 OS입니다.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -85,13 +85,13 @@ export default function LandingPage() {
               <div className="space-y-10">
                 <EcosystemItem 
                   icon={<Shield className="w-6 h-6 text-blue-400" />} 
-                  title="24/7 AI 상담 및 보호" 
-                  description="학부모의 날 선 메시지를 필터링하고, 밤낮없는 상담을 AI가 대신합니다." 
+                  title="24/7 스마트 상담 및 보호" 
+                  description="학부모의 날 선 메시지를 필터링하고, 밤낮없는 상담을 전문 비서가 대신합니다." 
                 />
                 <EcosystemItem 
                   icon={<Activity className="w-6 h-6 text-emerald-400" />} 
                   title="정밀 성적 분석 리포트" 
-                  description="WJedulab AI 연동으로 목표 대학 합격 확률까지 리포트에 담아냅니다." 
+                  description="WJedulab 지능형 엔진 연동으로 목표 대학 합격 확률까지 리포트에 담아냅니다." 
                 />
                 <EcosystemItem 
                   icon={<Globe className="w-6 h-6 text-purple-400" />} 
@@ -109,14 +109,14 @@ export default function LandingPage() {
                     <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center">
                       <Star className="w-6 h-6 text-white" />
                     </div>
-                    <span className="text-[10px] font-black tracking-widest text-blue-400 uppercase">AI Analytics Mode</span>
+                    <span className="text-[10px] font-black tracking-widest text-blue-400 uppercase">Smart Analytics Mode</span>
                   </div>
                   <div className="space-y-4">
                     <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                       <div className="h-full w-3/4 bg-blue-600"></div>
                     </div>
                     <p className="text-sm font-medium text-gray-400 leading-relaxed">
-                      &quot;최근 민수의 수학 성취도는 상위 5%에 진입했습니다. AI가 분석한 다음 단계 학습은 미적분 심화 과정입니다.&quot;
+                      &quot;최근 민수의 수학 성취도는 상위 5%에 진입했습니다. 스마트 엔진이 분석한 다음 단계 학습은 미적분 심화 과정입니다.&quot;
                     </p>
                   </div>
                   <div className="pt-8 border-t border-white/5 flex items-center justify-between">
@@ -152,15 +152,15 @@ export default function LandingPage() {
             <PricingCard 
               name="Starter"
               price="9,900"
-              description="AI로 완성하는 학부모 소통"
-              features={["학생 30명 관리", "AI 리포트 (표준형)", "학부모 안심 문자", "월간 통계 분석"]}
+              description="지능형 서비스로 완성하는 학부모 소통"
+              features={["학생 30명 관리", "스마트 리포트 (표준형)", "학부모 안심 문자", "월간 통계 분석"]}
             />
             <PricingCard 
               name="Basic"
               price="29,900"
               recommended
               description="학원 운영의 효율을 극대화"
-              features={["학생 70명 관리", "AI 리포트 (심화 분석)", "AI 상담 가이드 엔진", "원비 자동 리마인더"]}
+              features={["학생 70명 관리", "지능형 리포트 (심화 분석)", "스마트 상담 가이드 엔진", "원비 자동 리마인더"]}
             />
             <PricingCard 
               name="Professional"
@@ -172,7 +172,7 @@ export default function LandingPage() {
               name="Premium"
               price="99,900"
               description="최상위 학원의 압도적 경쟁력"
-              features={["학생 무제한", "AI 감정 필터링 센터", "커스텀 도메인 브랜딩", "24/7 VIP 기술지원"]}
+              features={["학생 무제한", "정서 분석 필터링 센터", "커스텀 도메인 브랜딩", "24/7 VIP 기술지원"]}
             />
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function LandingPage() {
               <span className="font-black text-white text-lg tracking-tighter">Notia OS</span>
             </div>
             <p className="text-xs font-bold text-gray-500 leading-relaxed max-w-sm">
-              우리는 인공지능 기술을 통해 교육 현장의 번거로운 행정을 자동화하고, 
+              우리는 지능형 기술을 통해 교육 현장의 번거로운 행정을 자동화하고, 
               선생님이 오직 학생의 성장에만 집중할 수 있는 환경을 만듭니다.
             </p>
           </div>

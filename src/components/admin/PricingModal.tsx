@@ -22,20 +22,20 @@ export default function PricingModal({ isOpen, onClose, isForce }: { isOpen: boo
   const plans = [
     {
       id: 'basic',
-      name: 'AI Basic',
+      name: 'Smart Basic',
       price: '9,900',
       description: '초기 소규모 학원/공부방',
-      features: ['학생 20명 관리', 'AI 리포트 기본 생성', 'QR 출결 시스템', '출결 알림 메시지'],
+      features: ['학생 20명 관리', '지능형 리포트 기본 생성', 'QR 출결 시스템', '출결 알림 메시지'],
       color: 'bg-white',
       textColor: 'text-gray-900',
       icon: <Zap className="w-5 h-5 text-blue-600" />
     },
     {
       id: 'pro',
-      name: 'AI Professional',
+      name: 'Smart Professional',
       price: '29,900',
       description: '중소형 학원 표준 솔루션',
-      features: ['학생 무제한 관리', '심화 AI 입시 분석', '교사 감정 보호 필터', '개인별 워크북 생성'],
+      features: ['학생 무제한 관리', '지능형 학습 분석 리포트', '교사 감정 보호 필터', '개인별 워크북 생성'],
       color: 'bg-gradient-to-br from-blue-600 to-indigo-700',
       textColor: 'text-white',
       popular: true,
@@ -43,10 +43,10 @@ export default function PricingModal({ isOpen, onClose, isForce }: { isOpen: boo
     },
     {
       id: 'enterprise',
-      name: 'AI Premium',
+      name: 'Smart Premium',
       price: '99,000',
       description: '대형 학원 전용 패키지',
-      features: ['다관점 통계 대시보드', '마케팅 카드뉴스 자동화', '전용 브랜드 커스텀', '1:1 전담 기술지원'],
+      features: ['다관점 통계 대시보드', '마케팅 홍보물 자동화', '전용 브랜드 커스텀', '1:1 전담 기술지원'],
       color: 'bg-[#1A1A1A]',
       textColor: 'text-white',
       icon: <ShieldCheck className="w-5 h-5 text-blue-400" />
@@ -80,7 +80,7 @@ export default function PricingModal({ isOpen, onClose, isForce }: { isOpen: boo
               Premium Solutions
             </div>
             <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">요금제 업그레이드</h2>
-            <p className="text-gray-500 font-bold max-w-md">Notia의 인공지능 기술로 학원의 운영 효율을 극대화하세요. 모든 플랜은 월 단위 결제입니다.</p>
+            <p className="text-gray-500 font-bold max-w-md">Notia의 스마트 관리 기술로 학원의 운영 효율을 극대화하세요. 모든 플랜은 월 단위 결제입니다.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
