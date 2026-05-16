@@ -102,7 +102,7 @@ export default function PaymentManagementPage() {
             Payment Intelligence
           </div>
           <h1 className="text-5xl font-black text-white tracking-tight mb-4">수납 및 결제 관리</h1>
-          <p className="text-gray-400 font-bold">미납 방지를 위한 AI 안내 문구를 생성하고 결제 현황을 실시간으로 추적하세요.</p>
+          <p className="text-gray-400 font-bold">미납 방지를 위한 스마트 안내 문구를 생성하고 결제 현황을 실시간으로 추적하세요.</p>
         </div>
       </div>
 
@@ -180,7 +180,7 @@ export default function PaymentManagementPage() {
           </div>
         </div>
 
-        {/* Right: AI Guidance Console */}
+        {/* Right: Smart Payment Assistant */}
         <div className={`lg:col-span-2 ${selectedStudent ? 'block' : 'hidden lg:block'}`}>
           {selectedStudent ? (
             <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] border border-gray-100 shadow-sm p-6 md:p-12 space-y-8 md:space-y-10 animate-in fade-in slide-in-from-right-8 duration-700 relative overflow-hidden">
@@ -200,7 +200,7 @@ export default function PaymentManagementPage() {
                     <Sparkles className="w-10 h-10 text-emerald-600 group-hover:rotate-12 transition-transform" />
                   </div>
                   <div>
-                    <h3 className="text-3xl font-black text-gray-900 tracking-tight">{selectedStudent.name} 학생 전용 AI 안내</h3>
+                    <h3 className="text-3xl font-black text-gray-900 tracking-tight">{selectedStudent.name} 학생 수납 안내</h3>
                     <p className="text-sm font-bold text-gray-400">학부모님의 성향과 학생의 성과를 조합한 맞춤형 안내</p>
                   </div>
                 </div>
@@ -220,8 +220,8 @@ export default function PaymentManagementPage() {
                 }`}>
                   {generating ? (
                     <div className="h-full flex flex-col items-center justify-center gap-6 text-center mt-20">
-                      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      <p className="font-black text-gray-400 uppercase tracking-widest text-xs">AI Composer is working...</p>
+                      <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                      <p className="font-black text-gray-400 uppercase tracking-widest text-xs">수납 비서가 문구를 작성 중입니다...</p>
                     </div>
                   ) : aiMessage ? (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

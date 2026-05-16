@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { name: '대시보드', href: '/admin/dashboard', icon: LayoutDashboard, minPlan: 'starter' },
     { name: '학생 관리', href: '/admin/students', icon: Users, minPlan: 'starter' },
-    { name: '리포트 관리', href: '/admin/reports', icon: MessageSquare, minPlan: 'starter' },
+    { name: '맞춤 리포트', href: '/admin/reports', icon: MessageSquare, minPlan: 'starter' },
     { name: '마케팅 센터', href: '/admin/marketing', icon: Instagram, minPlan: 'pro' },
     { name: '수납 및 결제', href: '/admin/payments', icon: CreditCard, minPlan: 'starter' },
     { name: '교재 관리', href: '/admin/textbooks', icon: BookOpen, minPlan: 'starter' },
@@ -119,10 +119,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }`}>
         <div className="p-8">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-[#0066FF] rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">N</span>
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center border border-white/10 shadow-2xl">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 4V20M4 20L20 4M20 4V20" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </div>
-            <span className="text-2xl font-bold text-[#1A1A1A] tracking-tight">Notia</span>
+            <span className="text-2xl font-black text-[#1A1A1A] tracking-tighter">Notia<span className="text-indigo-600">.</span></span>
           </div>
 
           <nav className="space-y-2">

@@ -174,9 +174,9 @@ export default function DashboardPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -mr-48 -mt-48"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-8">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400">
               <Activity className="w-3 h-3" />
-              Notia Intelligence Active
+              스마트 통합 관리 모드
             </div>
             <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-tight">
               Welcome back,<br /> 
@@ -185,7 +185,7 @@ export default function DashboardPage() {
               </span>
             </h1>
             <p className="text-lg text-gray-500 font-medium max-w-md">
-              오늘도 {academy?.name || '노티아 아카데미'}의 성장을 위해 Notia AI가 모든 준비를 마쳤습니다.
+              오늘도 {academy?.name || '노티아 아카데미'}의 성장을 위해 스마트 관리 엔진이 모든 준비를 마쳤습니다.
             </p>
           </div>
           <div className="flex gap-4">
@@ -194,7 +194,7 @@ export default function DashboardPage() {
               <p className="text-2xl font-black">{stats.totalStudents} <span className="text-sm font-bold text-gray-600">/ {plan.maxStudents === 9999 ? '∞' : plan.maxStudents} 학생</span></p>
             </div>
             <div className="px-8 py-5 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-xl">
-              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">AI Utilization</p>
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">스마트 분석 현황</p>
               <p className="text-2xl font-black">{stats.monthlyReports} <span className="text-sm font-bold text-gray-600">/ {plan.hasAiAdvancedReport ? '∞' : '50'}</span></p>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
           subtitle="리포트 피드백"
         />
         <StatCard 
-          label="AI 리포트 발송" 
+          label="지능형 리포트 발송" 
           value={`${stats.monthlyReports}건`} 
           change="+12건" 
           icon={<Sparkles className="w-6 h-6" />} 
@@ -282,7 +282,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-[#1A1A1A] tracking-tight">학부모 피드백 안심 모니터링</h2>
-                  <p className="text-sm font-bold text-gray-400">AI가 선생님을 보호하기 위해 메시지를 정제했습니다.</p>
+                  <p className="text-sm font-bold text-gray-400">스마트 엔진이 선생님을 보호하기 위해 메시지를 정제했습니다.</p>
                 </div>
               </div>
             </div>
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                 <div key={fb.id} className="p-8 bg-gray-50 rounded-[2.5rem] border border-gray-100 group relative">
                   <div className="flex items-center gap-2 mb-4">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">AI 감정 필터링 완료</span>
+                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">정서 분석 필터링 완료</span>
                   </div>
                   <p className="text-sm font-bold text-gray-700 leading-relaxed italic mb-6">
                     &quot;{fb.filtered_feedback || fb.parent_feedback}&quot;
@@ -322,7 +322,7 @@ export default function DashboardPage() {
             </h2>
             <div className="space-y-4 relative z-10">
               <Link href="/admin/marketing">
-                <ActionButton title="AI 카드뉴스 마케팅" icon={<Instagram className="w-4 h-4" />} primary />
+                <ActionButton title="스마트 홍보 콘텐츠 제작" icon={<Instagram className="w-4 h-4" />} primary />
               </Link>
               <Link href="/admin/payments">
                 <ActionButton title="수납 및 결제 관리" icon={<CreditCard className="w-4 h-4" />} />
@@ -334,11 +334,11 @@ export default function DashboardPage() {
             
             <div className="mt-12 p-8 bg-white/5 rounded-3xl border border-white/5">
               <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-4 h-4 text-blue-400" />
-                <p className="text-[10px] text-blue-300 font-black uppercase tracking-[0.2em]">AI 원비 수납 보조</p>
+                <Sparkles className="w-4 h-4 text-indigo-400" />
+                <p className="text-[10px] text-indigo-300 font-black uppercase tracking-[0.2em]">지능형 수납 보조 서비스</p>
               </div>
               <p className="text-xs font-bold leading-relaxed text-gray-500 italic">
-                &quot;AI가 {stats.unpaidCount}명의 미납 학생을 위한 맞춤 안내 문구를 준비했습니다.&quot;
+                &quot;스마트 엔진이 {stats.unpaidCount}명의 미납 학생을 위한 맞춤 안내 문구를 준비했습니다.&quot;
               </p>
             </div>
           </section>

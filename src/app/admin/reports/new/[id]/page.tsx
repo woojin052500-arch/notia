@@ -189,7 +189,7 @@ export default function NewReportPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">리포트 작성</h1>
-          <p className="text-sm font-medium text-gray-400">AI가 선생님의 정성을 전문적인 문장으로 다듬어 드립니다.</p>
+          <p className="text-sm font-medium text-gray-400">스마트 분석 엔진이 선생님의 정성을 전문적인 문장으로 다듬어 드립니다.</p>
         </div>
       </div>
 
@@ -246,7 +246,7 @@ export default function NewReportPage() {
                 ) : (
                   <>
                     <Sparkles className="w-7 h-7 group-hover:animate-pulse" />
-                    AI 리포트 & 분석 생성하기
+                    지능형 리포트 & 분석 생성하기
                   </>
                 )}
               </button>

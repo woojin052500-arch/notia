@@ -31,9 +31,9 @@ export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
   const actions = [
     { name: '대시보드', description: '학원 운영 현황 한눈에 보기', href: '/admin/dashboard', icon: LayoutDashboard, category: 'Navigation' },
     { name: '학생 관리', description: '학생 정보 등록, 수정 및 QR 발급', href: '/admin/students', icon: Users, category: 'Management' },
-    { name: '리포트 관리', description: 'AI 학습 리포트 생성 및 전송', href: '/admin/reports', icon: MessageSquare, category: 'Management' },
-    { name: '마케팅 센터', description: '인스타그램 카드뉴스 자동 생성', href: '/admin/marketing', icon: Instagram, category: 'Growth' },
-    { name: '수납 및 결제', description: '원비 미납 확인 및 수납 관리', href: '/admin/payments', icon: CreditCard, category: 'Management' },
+    { name: '맞춤 리포트', description: '지능형 학습 분석 리포트 발행', href: '/admin/reports', icon: MessageSquare, category: 'Management' },
+    { name: '마케팅 센터', description: '소셜 미디어 홍보 콘텐츠 자동 제작', href: '/admin/marketing', icon: Instagram, category: 'Growth' },
+    { name: '수납 및 결제', description: '원비 미납 확인 및 수납 비서 서비스', href: '/admin/payments', icon: CreditCard, category: 'Management' },
     { name: '교재 관리', description: '학원 교재 및 학생 교재 지급 관리', href: '/admin/textbooks', icon: BookOpen, category: 'Management' },
     { name: '프랜차이즈', description: '전국 지점 통합 관리 모드', href: '/admin/franchise', icon: Globe, category: 'Expansion' },
     { name: '설정', description: '학원 정보 및 알림 설정', href: '/admin/settings', icon: Settings, category: 'System' },
@@ -147,8 +147,8 @@ export default function CommandCenter({ isOpen, onClose }: CommandCenterProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-blue-600" />
-            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Notia Command Engine</span>
+            <Zap className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Notia Command Engine</span>
           </div>
         </div>
       </div>
