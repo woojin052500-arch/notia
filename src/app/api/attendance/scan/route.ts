@@ -64,7 +64,8 @@ export async function POST(req: Request) {
       const checkOutTime = new Date()
       
       // Minimum Attendance Time Check
-      const minMinutes = student.academies?.min_attendance_minutes || 50;
+      const academiesData = student.academies as any;
+      const minMinutes = (Array.isArray(academiesData) ? academiesData[0]?.min_attendance_minutes : academiesData?.min_attendance_minutes) || 50;
       const checkInTime = new Date(existing.check_in);
       const elapsedMinutes = (checkOutTime.getTime() - checkInTime.getTime()) / 60000;
       

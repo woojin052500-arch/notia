@@ -106,9 +106,9 @@ export default function AttendanceScanPage() {
         })
         resultMsg = `${student.name} 학생, 등원 처리가 완료되었습니다.`
       } else if (!latestAttendance.check_out) {
-        // Record exists but no check-out yet -> Check-out
         // Minimum Attendance Time Check
-        const minMinutes = student.academies?.min_attendance_minutes || 50;
+        const academiesData = student.academies as any;
+        const minMinutes = (Array.isArray(academiesData) ? academiesData[0]?.min_attendance_minutes : academiesData?.min_attendance_minutes) || 50;
         const checkInTime = new Date(latestAttendance.check_in);
         const elapsedMinutes = (now.getTime() - checkInTime.getTime()) / 60000;
         
