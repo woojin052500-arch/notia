@@ -77,7 +77,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               }])
               .select()
             
-            if (!createProfError && newProfile) {
+            if (createProfError) {
+              console.error('Profile creation error:', createProfError)
+            } else if (newProfile && newProfile.length > 0) {
               profile = newProfile[0]
             }
           }
@@ -90,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             .limit(1)
           
           let academyData = academyRows && academyRows[0]
-          if (!academyData) {
+          if (!academyData && profile) { // profile이 데이터베이스에 확실히 생성된 경우에만 진행하여 외래키 에러 방지
             const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
             const { data: newAcademy, error: createAcadError } = await supabase
               .from('academies')
@@ -98,12 +100,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 owner_id: authUser.id, 
                 name: '노티아 학원', 
                 slug: slug,
-                status: 'active', // 바로 활성화하여 원활히 테스트할 수 있도록 함
+                status: 'active',
                 plan_type: 'starter'
               }])
               .select()
             
-            if (!createAcadError && newAcademy) {
+            if (createAcadError) {
+              console.error('Academy creation error:', createAcadError)
+            } else if (newAcademy && newAcademy.length > 0) {
               academyData = newAcademy[0]
             }
           }
