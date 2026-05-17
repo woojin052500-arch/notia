@@ -37,6 +37,10 @@ export default function NewReportPage() {
   const [prediction, setPrediction] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [agreeAiThirdParty, setAgreeAiThirdParty] = useState(false)
+  const [agreeSmsDelegation, setAgreeSmsDelegation] = useState(false)
+  const [smsText, setSmsText] = useState('')
+  const [reportUrl, setReportUrl] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,12 +128,15 @@ export default function NewReportPage() {
       const publicLink = `${window.location.origin}/report/${data.id}`
       const smsFormat = `[리포트 알림] ${student.name} 학생의 오늘 학습 리포트가 도착했습니다.\n\n▶ 리포트 확인하기:\n${publicLink}\n\n오늘도 정성을 다해 지도했습니다. 감사합니다.`
       
-      await navigator.clipboard.writeText(smsFormat)
+      setReportUrl(publicLink)
+      setSmsText(smsFormat)
+      try {
+        await navigator.clipboard.writeText(smsFormat)
+      } catch (clipErr) {
+        console.warn('Clipboard write failed:', clipErr)
+      }
       
       setIsSuccess(true)
-      setTimeout(() => {
-        router.push('/admin/reports')
-      }, 3000)
     }
   }
 
@@ -163,18 +170,88 @@ export default function NewReportPage() {
         {plan.name} Plan Active
       </div>
       {isSuccess && (
-        <div className="fixed inset-0 bg-white/90 backdrop-blur-md z-[100] flex flex-col items-center justify-center text-center p-10 animate-in fade-in duration-500">
-          <div className="w-24 h-24 bg-green-50 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-xl shadow-green-100 border border-green-100">
-            <CheckCircle2 className="w-12 h-12 text-green-500" />
-          </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">리포트 저장 및 문구 복사 완료!</h2>
-          <p className="text-lg font-bold text-gray-500 leading-relaxed">
-            학부모 전송용 문구와 링크가 클립보드에 복사되었습니다.<br />
-            이제 카카오톡이나 문자에 바로 '붙여넣기' 하세요!
-          </p>
-          <div className="mt-12 flex items-center gap-2 text-green-600 font-black text-sm bg-green-50 px-6 py-3 rounded-full border border-green-100">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            잠시 후 목록으로 이동합니다...
+        <div className="fixed inset-0 bg-white/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center p-6 animate-in fade-in duration-500 overflow-y-auto">
+          <div className="max-w-md w-full bg-white rounded-[2.5rem] border border-gray-100 shadow-2xl p-8 text-center space-y-6">
+            <div className="mx-auto w-20 h-20 bg-green-50 rounded-[2rem] flex items-center justify-center shadow-lg shadow-green-100 border border-green-100">
+              <CheckCircle2 className="w-10 h-10 text-green-500" />
+            </div>
+            
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">리포트 저장 완료!</h2>
+              <p className="text-sm font-bold text-gray-500 leading-relaxed">
+                {student.name} 학생의 리포트가 성공적으로 생성 및 승인되었습니다.<br />
+                학부모님께 바로 전송해 보세요.
+              </p>
+            </div>
+
+            {/* 리포트 내용 프리뷰 카드 */}
+            <div className="p-4 bg-gray-50 rounded-2xl text-left border border-gray-100 space-y-2">
+              <div className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                <span>알림 전송 미리보기</span>
+                <span className="text-blue-600">클립보드 복사됨</span>
+              </div>
+              <p className="text-xs font-bold text-gray-600 whitespace-pre-wrap leading-relaxed bg-white p-3 rounded-xl border border-gray-100 max-h-32 overflow-y-auto">
+                {smsText}
+              </p>
+            </div>
+
+            {/* 인터랙티브 전송 버튼 세트 */}
+            <div className="grid grid-cols-1 gap-3 pt-2">
+              {/* Web Share (카카오톡 및 모바일 전체 공유 지원) */}
+              <button
+                onClick={async () => {
+                  if (navigator.share) {
+                    try {
+                      await navigator.share({
+                        title: `[Notia] ${student.name} 학습 리포트`,
+                        text: smsText,
+                        url: reportUrl
+                      });
+                    } catch (err) {
+                      console.log('Share failed:', err);
+                    }
+                  } else {
+                    navigator.clipboard.writeText(smsText);
+                    alert('알림 문구가 클립보드에 다시 복사되었습니다.');
+                  }
+                }}
+                className="w-full py-4 bg-yellow-400 text-yellow-950 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-yellow-500 transition-all shadow-md active:scale-95 cursor-pointer"
+              >
+                <Share2 className="w-4 h-4" />
+                💬 카카오톡 / SNS 직접 공유하기
+              </button>
+
+              {/* SMS 즉시 전송 */}
+              <a
+                href={`sms:${student.parent_phone}?body=${encodeURIComponent(smsText)}`}
+                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-md active:scale-95 text-center"
+              >
+                <Send className="w-4 h-4" />
+                📱 문자(SMS)로 즉시 발송하기
+              </a>
+
+              {/* 클립보드 복사 버튼 */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(smsText);
+                  alert('알림 문구가 다시 복사되었습니다.');
+                }}
+                className="w-full py-4 bg-gray-100 text-gray-700 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-gray-200 transition-all cursor-pointer"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                문구 클립보드에 다시 복사
+              </button>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100">
+              <button
+                onClick={() => router.push('/admin/reports')}
+                className="text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors flex items-center justify-center gap-1 mx-auto"
+              >
+                리포트 목록으로 돌아가기
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -236,9 +313,48 @@ export default function NewReportPage() {
                 </div>
               </div>
               
+              {/* 법적 리스크 방지용 AI 분석 및 정보 제공 동의 (Legal Consent Card) */}
+              <div className="p-5 bg-gray-50 border border-gray-200/60 rounded-3xl space-y-4">
+                <div className="flex items-center gap-2 text-xs font-black text-gray-700 tracking-wider">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  <span>법적 책임 및 정보 제공 동의 필수 항목</span>
+                </div>
+                <div className="space-y-3">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={agreeAiThirdParty}
+                      onChange={(e) => setAgreeAiThirdParty(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-gray-500 group-hover:text-gray-700 transition-colors leading-relaxed">
+                      [필수] AI 분석을 위한 학생/학부모 개인정보 제3자 제공 동의
+                      <span className="block text-[10px] text-gray-400 font-medium mt-0.5">
+                        * 리포트 생성을 위해 입력된 메모 데이터가 외부 안전 보안 LLM 서버로 암호화 전송되며, 리포트 생성 즉시 영구 삭제 처리됩니다.
+                      </span>
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={agreeSmsDelegation}
+                      onChange={(e) => setAgreeSmsDelegation(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-bold text-gray-500 group-hover:text-gray-700 transition-colors leading-relaxed">
+                      [필수] 학부모 리포트 발송 대행 및 링크 생성 권한 위임 동의
+                      <span className="block text-[10px] text-gray-400 font-medium mt-0.5">
+                        * 원장님의 권한으로 학부모에게 관찰 리포트 확인용 고유 링크를 발행하고 발송 문구를 전송하는 데 동의합니다.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
               <button
                 onClick={handleGenerateAI}
-                disabled={generating || !memo}
+                disabled={generating || !memo || !agreeAiThirdParty || !agreeSmsDelegation}
                 className="group w-full py-6 bg-[#1A1A1A] text-white rounded-[2.5rem] font-black text-lg flex items-center justify-center gap-3 hover:bg-[#0066FF] active:scale-[0.98] transition-all shadow-2xl shadow-blue-100 disabled:opacity-30 disabled:hover:bg-[#1A1A1A]"
               >
                 {generating ? (
