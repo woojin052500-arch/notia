@@ -331,9 +331,9 @@ export default function PublicReportPage() {
                   </div>
                   <h3 className="text-xl font-black mb-2">원비 결제 예정 안내</h3>
                   <p className="text-sm font-medium text-orange-50 opacity-90 mb-6">
-                    {report.students.name} 학생의 다음 원비 결제일은 <br />
+                    {report.students?.name || '학생'} 학생의 다음 원비 결제일은 <br />
                     <span className="font-black text-white underline decoration-2 underline-offset-4">
-                      {new Date(report.students.next_payment_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
+                      {report.students?.next_payment_date ? new Date(report.students.next_payment_date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : ''}
                     </span>입니다. 쾌적한 학습 환경 유지를 위해 확인 부탁드립니다.
                   </p>
                   <button className="w-full py-4 bg-white text-orange-600 rounded-2xl font-black text-sm hover:bg-orange-50 transition-all flex items-center justify-center gap-2 shadow-lg">
@@ -362,7 +362,7 @@ export default function PublicReportPage() {
 
               <div className="space-y-4 mb-8 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                 <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl rounded-tl-none border border-white/5 text-sm font-medium leading-relaxed">
-                  안녕하세요 학부모님! Notia AI 상담봇입니다. {report.students.name} 학생의 리포트나 학원 생활에 대해 궁금한 점이 있으신가요?
+                  안녕하세요 학부모님! Notia AI 상담봇입니다. {report.students?.name || '학생'} 학생의 리포트나 학원 생활에 대해 궁금한 점이 있으신가요?
                 </div>
                 {chatMessages.map((msg: any, idx: number) => (
                   <div key={idx} className={`p-4 rounded-2xl text-sm font-medium leading-relaxed ${
@@ -437,17 +437,17 @@ export default function PublicReportPage() {
                 </div>
                 <h3 className="text-xl font-black text-gray-900 mb-2">지인 추천하고 혜택 받으세요!</h3>
                 <p className="text-sm font-medium text-gray-500 mb-8 leading-relaxed">
-                  {report.students.name} 학생의 친구를 {report.students.academies?.name || '학원'}에 추천해 보세요. <br/>
+                  {report.students?.name || '학생'} 학생의 친구를 {report.students?.academies?.name || '학원'}에 추천해 보세요. <br/>
                   지인 등록 시 두 분 모두에게 풍성한 혜택을 드립니다!
                 </p>
                 <div className="flex gap-2">
                   <div className="flex-1 bg-white border border-gray-100 rounded-2xl px-6 py-4 flex items-center justify-between">
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest">내 추천 코드</p>
-                    <p className="font-black text-blue-600">{report.students.referral_code || 'REF-NOTIA'}</p>
+                    <p className="font-black text-blue-600">{report.students?.referral_code || 'REF-NOTIA'}</p>
                   </div>
                   <button 
                     onClick={() => {
-                      const shareLink = `http://localhost:3000/join/${report.students.referral_code || 'REF-NOTIA'}`
+                      const shareLink = `http://localhost:3000/join/${report.students?.referral_code || 'REF-NOTIA'}`
                       navigator.clipboard.writeText(shareLink)
                       alert('추천 링크가 복사되었습니다. 지인분께 공유해 주세요!')
                     }}
