@@ -36,13 +36,15 @@ export default function StudentsPage() {
   const supabase = createClient()
 
   const fetchStudents = async () => {
+    if (!academyId) return
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('students')
       .select('*')
+      .eq('academy_id', academyId)
       .order('name', { ascending: true })
 
-    if (data) setStudents(data)
+    if (!error && data) setStudents(data)
     setLoading(false)
   }
 
@@ -56,6 +58,34 @@ export default function StudentsPage() {
           return
         }
 
+        // 1. Ensure Profile Exists (Auto-Heal)
+        const { data: profileRows } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .limit(1)
+        
+        let profile = profileRows && profileRows[0]
+        if (!profile) {
+          console.log('Profile missing on student page, auto-healing profile...');
+          const { data: newProfile, error: createProfError } = await supabase
+            .from('profiles')
+            .insert([{
+              id: user.id,
+              full_name: user.user_metadata?.full_name || '원장 선생님',
+              email: user.email || '',
+              role: 'director'
+            }])
+            .select()
+          
+          if (createProfError) {
+            console.error('Profile auto-heal failed:', createProfError);
+          } else if (newProfile && newProfile.length > 0) {
+            profile = newProfile[0];
+          }
+        }
+
+        // 2. Ensure Academy Exists (Auto-Heal)
         const { data: academyRows, error: acadError } = await supabase
           .from('academies')
           .select('*')
@@ -64,16 +94,43 @@ export default function StudentsPage() {
         
         if (acadError) throw acadError
         
-        const academyData = academyRows && academyRows[0]
+        let academyData = academyRows && academyRows[0]
+        if (!academyData && profile) {
+          console.log('Academy missing on student page, auto-healing academy...');
+          const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
+          const { data: newAcademy, error: createAcadError } = await supabase
+            .from('academies')
+            .insert([{ 
+              owner_id: user.id, 
+              name: '노티아 학원', 
+              slug: slug,
+              status: 'active',
+              plan_type: 'starter'
+            }])
+            .select()
+          
+          if (createAcadError) {
+            console.error('Academy auto-heal failed:', createAcadError);
+          } else if (newAcademy && newAcademy.length > 0) {
+            academyData = newAcademy[0];
+          }
+        }
         
         if (academyData) {
           setAcademy(academyData)
           setAcademyId(academyData.id)
-          await fetchStudents()
-        } else {
-          // 학원이 아직 없는 경우 (레이아웃에서 생성 중), 로딩 완료 상태로 전환하여 안전하게 대기합니다.
-          setLoading(false)
+          
+          // Now fetch students with guaranteed academyData.id
+          const { data: studentData, error: studentError } = await supabase
+            .from('students')
+            .select('*')
+            .eq('academy_id', academyData.id)
+            .order('name', { ascending: true })
+          
+          if (studentError) throw studentError;
+          if (studentData) setStudents(studentData)
         }
+        setLoading(false)
       } catch (err: any) {
         console.error('Error initializing student page data:', err)
         alert('데이터를 불러오는 중 오류가 발생했습니다: ' + (err.message || String(err)))
@@ -81,7 +138,7 @@ export default function StudentsPage() {
       }
     }
     initializeData()
-  }, [])
+  }, [academyId])
 
   const deleteStudent = async (id: string) => {
     if (!confirm('정말 학생 정보를 삭제하시겠습니까? 관련 데이터가 모두 소멸됩니다.')) return
