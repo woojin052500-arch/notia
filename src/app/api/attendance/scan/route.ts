@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // 1. Find student
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .select('id, name, academy_id, estimated_travel_time, academies(min_attendance_minutes)')
+      .select('id, name, academy_id, estimated_travel_time, parent_phone, academies(min_attendance_minutes)')
       .eq('qr_token', qrToken)
       .single()
 
@@ -100,6 +100,30 @@ export async function POST(req: Request) {
     const notificationMsg = type === 'check-in' 
       ? `${student.name} 학생 등원 처리가 완료되었습니다.`
       : `${student.name} 학생 하원 처리가 완료되었습니다. (예상 귀가: ${predictedArrival})`;
+
+    // Automatically send SMS via Solapi if configured and parent's phone exists
+    if (student.parent_phone) {
+      const apiKey = process.env.SOLAPI_API_KEY
+      const apiSecret = process.env.SOLAPI_API_SECRET
+      const senderNumber = process.env.SOLAPI_SENDER_NUMBER
+      
+      if (apiKey && apiSecret && senderNumber) {
+        try {
+          const { SolapiMessageService } = await import('solapi')
+          const messageService = new SolapiMessageService(apiKey, apiSecret)
+          await messageService.send({
+            to: student.parent_phone,
+            from: senderNumber,
+            text: `[Notia 출결 알림] ${notificationMsg}`
+          })
+          console.log(`[SOLAPI ATTENDANCE SMS SUCCESS] TO: ${student.parent_phone}`);
+        } catch (smsErr) {
+          console.error('[SOLAPI ATTENDANCE SMS CRITICAL ERROR]', smsErr)
+        }
+      } else {
+        console.log(`[SOLAPI ATTENDANCE MOCK SMS] TO: ${student.parent_phone} | TEXT: [Notia 출결 알림] ${notificationMsg}`);
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 

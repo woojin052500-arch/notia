@@ -136,6 +136,22 @@ export default function NewReportPage() {
         console.warn('Clipboard write failed:', clipErr)
       }
       
+      // Auto-send Solapi SMS in the background if parent's phone exists
+      if (student.parent_phone) {
+        try {
+          await fetch('/api/sms/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: student.parent_phone,
+              text: smsFormat
+            })
+          })
+        } catch (smsErr) {
+          console.error('Failed to auto-send Solapi SMS:', smsErr)
+        }
+      }
+      
       setIsSuccess(true)
     }
   }

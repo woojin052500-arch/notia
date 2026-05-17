@@ -33,14 +33,26 @@ export async function POST(req: Request) {
       }
     `
 
-    // --- High Performance AI ---
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20240620', 
-      max_tokens: 1500,
-      temperature: 0.7,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: `학생 이름: ${studentName}\n선생님 메모: ${memo}\n목표: ${targetGoal}\n\n위 내용을 바탕으로 리포트, 숙제, 입시 분석을 작성해줘.` }],
-    })
+    // --- High Performance AI with Haiku Failover ---
+    let message;
+    try {
+      message = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-latest', 
+        max_tokens: 1500,
+        temperature: 0.7,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `학생 이름: ${studentName}\n선생님 메모: ${memo}\n목표: ${targetGoal}\n\n위 내용을 바탕으로 리포트, 숙제, 입시 분석을 작성해줘.` }],
+      })
+    } catch (sonnetError) {
+      console.warn('Sonnet failed, trying Haiku model fallback:', sonnetError);
+      message = await anthropic.messages.create({
+        model: 'claude-3-haiku-20240307', 
+        max_tokens: 1500,
+        temperature: 0.7,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `학생 이름: ${studentName}\n선생님 메모: ${memo}\n목표: ${targetGoal}\n\n위 내용을 바탕으로 리포트, 숙제, 입시 분석을 작성해줘.` }],
+      })
+    }
 
     const aiResponseText = message.content[0].type === 'text' ? message.content[0].text : ''
     

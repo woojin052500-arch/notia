@@ -206,7 +206,7 @@ export default function DashboardPage() {
         <StatCard 
           label="전체 학생 수" 
           value={`${stats.totalStudents}명`} 
-          change="+3명" 
+          change={stats.totalStudents > 0 ? `+${stats.totalStudents}명` : "0명"} 
           icon={<Users className="w-6 h-6" />} 
           color="text-blue-500" 
           bgColor="bg-blue-500/5"
@@ -216,7 +216,7 @@ export default function DashboardPage() {
         <StatCard 
           label="학부모 반응률" 
           value={`${stats.responseRate}%`} 
-          change="+5%" 
+          change={stats.responseRate > 0 ? `+${stats.responseRate}%` : "0%"} 
           icon={<MessageSquare className="w-6 h-6" />} 
           color="text-purple-500" 
           bgColor="bg-purple-500/5"
@@ -226,7 +226,7 @@ export default function DashboardPage() {
         <StatCard 
           label="지능형 리포트 발송" 
           value={`${stats.monthlyReports}건`} 
-          change="+12건" 
+          change={stats.monthlyReports > 0 ? `+${stats.monthlyReports}건` : "0건"} 
           icon={<Sparkles className="w-6 h-6" />} 
           color="text-emerald-500" 
           bgColor="bg-emerald-500/5"
@@ -236,7 +236,7 @@ export default function DashboardPage() {
         <StatCard 
           label="미납 원비" 
           value={`${stats.unpaidCount}건`} 
-          change="-2건" 
+          change={stats.unpaidCount > 0 ? `-${stats.unpaidCount}건` : "0건"} 
           icon={<AlertTriangle className="w-6 h-6" />} 
           color="text-orange-500" 
           bgColor="bg-orange-500/5"
@@ -380,6 +380,15 @@ export default function DashboardPage() {
 }
 
 function StatCard({ label, value, change, icon, color, bgColor, borderColor, subtitle }: any) {
+  const isZero = !change || change.startsWith('0') || change === '0%' || change === '0건' || change === '0명'
+  const isNegative = change?.startsWith('-')
+  
+  const badgeClass = isZero
+    ? 'text-gray-400 bg-gray-50'
+    : isNegative
+      ? 'text-red-500 bg-red-50'
+      : 'text-emerald-500 bg-emerald-50'
+
   return (
     <div className={`bg-white p-10 rounded-[3.5rem] border border-gray-100 shadow-sm relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-700`}>
       <div className={`w-16 h-16 ${bgColor} ${borderColor} border rounded-[1.5rem] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500`}>
@@ -391,7 +400,7 @@ function StatCard({ label, value, change, icon, color, bgColor, borderColor, sub
           <h3 className="text-4xl font-black text-[#1A1A1A] tracking-tighter">{value}</h3>
           <p className="text-[10px] font-bold text-gray-300 mt-1 uppercase tracking-widest">{subtitle}</p>
         </div>
-        <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-full">{change}</span>
+        <span className={`text-[10px] font-black px-3 py-1.5 rounded-full ${badgeClass}`}>{change}</span>
       </div>
     </div>
   )
