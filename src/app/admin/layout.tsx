@@ -37,6 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSubscribed, setIsSubscribed] = useState(true)
   const [isPricingOpen, setIsPricingOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -230,10 +231,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <QrCode className="w-4 h-4" />
               출결 스캐너 실행
             </Link>
-            <button className="relative p-2 text-[#999999] hover:text-[#1A1A1A] transition-colors">
-              <Bell className="w-6 h-6" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="relative p-2 text-[#999999] hover:text-[#1A1A1A] transition-colors focus:outline-none"
+              >
+                <Bell className="w-6 h-6" />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
+
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-3 w-80 bg-white/95 backdrop-blur-xl border border-gray-100 rounded-3xl shadow-2xl p-6 z-[200] animate-in fade-in slide-in-from-top-3 duration-300">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-sm font-black text-[#1A1A1A]">알림 센터</h4>
+                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-black">새 알림 3개</span>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-red-50/50 border border-red-100/50 rounded-2xl flex items-start gap-3">
+                      <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 shrink-0 animate-pulse"></div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-900 leading-snug">이용권 만료 5일 전</p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-1">원장님, Notia 이용권이 5일 뒤 만료됩니다. 결제를 확인해 주세요.</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-blue-50/50 border border-blue-100/50 rounded-2xl flex items-start gap-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0 animate-pulse"></div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-900 leading-snug">신규 학생 등록 알림</p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-1">학원 스마트 인명부에 새로운 학생이 성공적으로 등록되었습니다.</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-gray-50/50 border border-gray-100/50 rounded-2xl flex items-start gap-3">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5 shrink-0"></div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-700 leading-snug">스마트 출결 알림</p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-1">출결 스캐너 시스템이 정상 가동 중입니다.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-3 pl-4 md:pl-6 border-l border-gray-100">
               <div className="text-right hidden xs:block">
                 <p className="text-sm font-bold text-[#1A1A1A]">
