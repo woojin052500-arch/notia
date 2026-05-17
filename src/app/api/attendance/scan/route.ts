@@ -14,18 +14,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'QR 토큰이 없습니다.' }, { status: 400 })
     }
 
-    // Initialize Supabase using Service Role or master access to bypass all RLS policies on the server side
+    // Read the authorization header from the request to forward user RLS context if available
+    const authHeader = req.headers.get('authorization')
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     
     const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    // We configure global.fetch bypass or use service key. If no service role key exists, we can use a service client
-    const supabase = createSupabaseClient(supabaseUrl, supabaseKey, {
+    
+    // Build options. If we have a Bearer token, forward it to the Supabase client so it runs under the user's RLS session context.
+    const clientOptions: any = {
       auth: {
         persistSession: false,
         autoRefreshToken: false
       }
-    })
+    }
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1]
+      if (token) {
+        clientOptions.global = {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      }
+    }
+
+    const supabase = createSupabaseClient(supabaseUrl, supabaseKey, clientOptions)
 
     // 1. Find student
     const { data: student, error: studentError } = await supabase

@@ -11,12 +11,14 @@ import {
   Camera,
   UserCheck
 } from 'lucide-react'
+import { createClient } from '@/utils/supabase/client'
 
 export default function AttendanceKioskPage() {
   const [scanResult, setScanResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+  const supabase = createClient()
   
   const loadingRef = useRef(loading)
   const scanResultRef = useRef(scanResult)
@@ -48,9 +50,14 @@ export default function AttendanceKioskPage() {
     lastScanTimeRef.current = now_ts
     
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+
       const response = await fetch('/api/attendance/scan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': session?.access_token ? `Bearer ${session.access_token}` : ''
+        },
         body: JSON.stringify({ qrToken: decodedText })
       })
 
