@@ -55,17 +55,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (authUser) {
         setAuthUser(authUser)
-        const { data: profile } = await supabase
+        const { data: profileRows } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', authUser.id)
-          .single()
+          .limit(1)
         
-        const { data: academyData } = await supabase
+        const { data: academyRows } = await supabase
           .from('academies')
           .select('*')
           .eq('owner_id', authUser.id)
-          .single()
+          .limit(1)
+        
+        const profile = profileRows && profileRows[0]
+        const academyData = academyRows && academyRows[0]
         
         setUser(profile)
         setAcademy(academyData)

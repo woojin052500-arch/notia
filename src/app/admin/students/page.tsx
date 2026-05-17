@@ -56,13 +56,15 @@ export default function StudentsPage() {
           return
         }
 
-        const { data: academyData, error: acadError } = await supabase
+        const { data: academyRows, error: acadError } = await supabase
           .from('academies')
           .select('*')
           .eq('owner_id', user.id)
-          .single()
+          .limit(1)
         
         if (acadError) throw acadError
+        
+        const academyData = academyRows && academyRows[0]
         
         if (academyData) {
           setAcademy(academyData)
