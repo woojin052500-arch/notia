@@ -41,6 +41,7 @@ export default function NewReportPage() {
   const [agreeSmsDelegation, setAgreeSmsDelegation] = useState(false)
   const [smsText, setSmsText] = useState('')
   const [reportUrl, setReportUrl] = useState('')
+  const [apiNotice, setApiNotice] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +76,7 @@ export default function NewReportPage() {
   const handleGenerateAI = async () => {
     setGenerating(true)
     setError(null)
+    setApiNotice('')
     
     try {
       const response = await fetch('/api/ai/report', {
@@ -93,6 +95,9 @@ export default function NewReportPage() {
       setAiContent(data.content)
       setHomework(data.homework || [])
       setPrediction(data.prediction || '')
+      if (data.devAlert) {
+        setApiNotice(data.devAlert)
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -193,10 +198,10 @@ export default function NewReportPage() {
             </div>
             
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">리포트 저장 완료!</h2>
+              <h2 className="text-2xl font-black text-emerald-600 tracking-tight">💬 솔라피 자동 문자 전송 완료!</h2>
               <p className="text-sm font-bold text-gray-500 leading-relaxed">
-                {student.name} 학생의 리포트가 성공적으로 생성 및 승인되었습니다.<br />
-                학부모님께 바로 전송해 보세요.
+                학부모 연락처(<span className="text-blue-600 font-extrabold">{student?.parent_phone || '연락처 없음'}</span>)로 <br />
+                솔라피(Solapi) 리포트 알림 문자가 **실시간 발송**되었습니다!
               </p>
             </div>
 
@@ -416,6 +421,20 @@ export default function NewReportPage() {
               )}
             </div>
 
+            {apiNotice && (
+              <div className="mb-6 p-5 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3 animate-in fade-in duration-300">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs text-amber-800 font-bold leading-relaxed">
+                    <strong>데모 체험 모드 안내 (교사 전용):</strong>
+                  </p>
+                  <p className="text-[10px] text-amber-700 font-medium leading-relaxed mt-1">
+                    {apiNotice}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex-1 relative">
               {!aiContent && !generating && (
                 <div key="empty-state" className="absolute inset-0 flex flex-col items-center justify-center text-center p-10">
@@ -489,26 +508,27 @@ export default function NewReportPage() {
                   <button
                     onClick={handleSaveReport}
                     disabled={saving}
-                    className="flex-1 py-5 bg-[#1A1A1A] text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 hover:bg-[#0066FF] active:scale-[0.98] transition-all shadow-xl shadow-blue-100"
+                    className="flex-1 py-5 bg-[#1A1A1A] text-white rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 hover:bg-[#0066FF] active:scale-[0.98] transition-all shadow-xl shadow-blue-100 animate-pulse"
                   >
                     {saving ? (
                       <Loader2 className="w-6 h-6 animate-spin" />
                     ) : (
                       <>
-                        <Share2 className="w-6 h-6" />
-                        학부모 전송용 문구 & 링크 복사
+                        <Send className="w-6 h-6 animate-bounce" />
+                        💬 솔라피(SMS) 즉시 전송 및 승인
                       </>
                     )}
                   </button>
                 </div>
                 
                 <div className="p-6 bg-blue-50 rounded-[2rem] border border-blue-100 flex items-start gap-4">
-                  <div className="p-2 bg-white rounded-xl shadow-sm text-blue-600">
-                    <Sparkles className="w-5 h-5" />
+                  <div className="p-2 bg-white rounded-xl shadow-sm text-blue-600 animate-pulse">
+                    <Send className="w-5 h-5" />
                   </div>
                   <p className="text-[11px] text-blue-800 font-black leading-relaxed">
-                    <strong>사용 안내:</strong> 저장 버튼을 누르면 학부모 전용 리포트 링크와 전송용 문구가 자동으로 복사됩니다. <br/>
-                    카카오톡 등에서 바로 '붙여넣기'하여 학부모님께 전송하세요.
+                    <strong>솔라피 자동 전송 시스템 활성화:</strong><br />
+                    이 버튼을 누르면 학부모님의 연락처(<span className="text-blue-600 font-extrabold">{student?.parent_phone || '연락처 없음'}</span>)로 
+                    솔라피(Solapi) 리포트가 **실시간으로 즉시 전송**되며, 전송용 문구도 동시에 클립보드에 복사됩니다.
                   </p>
                 </div>
               </div>

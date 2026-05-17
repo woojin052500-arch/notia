@@ -75,17 +75,18 @@ export async function POST(req: Request) {
     // Check if key is missing
     const isKeyMissing = !process.env.ANTHROPIC_API_KEY
     const devAlert = isKeyMissing 
-      ? `\n\n⚠️ [안내: ANTHROPIC_API_KEY 환경 변수가 세팅되지 않아 데모 체험 모드로 작동 중입니다. Vercel이나 .env.local에 API 키를 등록하면 실제 고성능 AI 리포트가 생성됩니다.]`
-      : `\n\n⚠️ [안내: Claude API 호출 중 일시적 오류가 발생했습니다. (${error.message || '제한 오류'}) 데모 리포트가 생성되었습니다.]`
+      ? `[안내: ANTHROPIC_API_KEY 환경 변수가 세팅되지 않아 데모 체험 모드로 작동 중입니다. Vercel이나 .env.local에 API 키를 등록하면 실제 고성능 AI 리포트가 생성됩니다.]`
+      : `[안내: Claude API 호출 중 일시적 오류가 발생했습니다. (${error.message || '제한 오류'}) 데모 리포트가 생성되었습니다.]`
 
     return NextResponse.json({ 
-      content: `오늘 ${studentName} 학생은 수업에 매우 성실하게 임했습니다. 선생님의 세심한 지도 아래 '${memo}'에 대한 핵심 개념을 완벽하게 익혔으며, 특히 오답을 끝까지 풀어내려는 집중력이 돋보였습니다. 앞으로도 이 기세를 이어간다면 더욱 큰 비약적 성장이 기대됩니다.${devAlert}`,
+      content: `오늘 ${studentName} 학생은 수업에 매우 성실하게 임했습니다. 선생님의 세심한 지도 아래 '${memo}'에 대한 핵심 개념을 완벽하게 익혔으며, 특히 문제를 스스로 해결하려는 강한 집중력이 돋보였습니다. 앞으로도 이 기세를 이어간다면 향후 학습에서 더욱 우수하고 큰 성장을 이루어낼 것이라 확신합니다.`,
       homework: [
-        `'${memo}' 단원 관련 오답 문항 5개 다시 풀기`, 
-        "오늘 피드백받은 주요 핵심 문항 스스로 노트 정리하기", 
-        "다음 시간 진도 영역 어휘 미리 읽어오기"
+        `'${memo}' 단원 관련 오답 오차 수정 5문항 풀기`, 
+        "오늘 피드백받은 고난도 핵심 유형 오답 풀이 정리", 
+        "다음 시간 기본 개념 예습 문제 읽고 준비하기"
       ],
-      prediction: `'${targetGoal || '목표 목표'}' 달성을 위해 현재의 끈기 있는 학습 페이스를 일관되게 유지하는 것이 매우 결정적입니다. 특히 취약 유형 오답을 완벽히 정복한다면 합격선에 거뜬히 안착할 수 있을 것입니다.`
+      prediction: `'${targetGoal || '목표 대학 합격'}' 달성을 위해 현재 보여주는 끈기 있는 집중력과 꼼꼼한 오답 분석 태도를 꾸준히 유지하는 것이 가장 결정적입니다. 취약점을 지속적으로 분석 보완해 나가면 원하시는 목표를 거뜬히 성취할 것입니다.`,
+      devAlert: devAlert
     })
   }
 }
