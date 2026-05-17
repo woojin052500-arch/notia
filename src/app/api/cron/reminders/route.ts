@@ -2,17 +2,22 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { SolapiMessageService } from 'solapi'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service role for cron jobs to bypass RLS
-)
-
 export async function GET(req: Request) {
   // 1. 보안 설정: Vercel Cron 등 지정된 요청만 허용 (옵션)
   const authHeader = req.headers.get('authorization')
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase configuration missing');
+    return NextResponse.json({ error: 'Database configuration missing' }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     const today = new Date()
