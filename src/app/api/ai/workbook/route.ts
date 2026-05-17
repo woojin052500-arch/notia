@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { studentId } = await req.json()
 
     if (!studentId) {
-      return NextResponse.json({ error: '?�생 ID가 ?�요?�니??' }, { status: 400 })
+      return NextResponse.json({ error: '학생 ID가 필요합니다.' }, { status: 400 })
     }
 
     // Initialize Supabase
@@ -32,23 +32,23 @@ export async function POST(req: Request) {
 
     // 2. AI Generate Workbook Content
     const systemPrompt = `
-      ?�신?� 최상?�권 ?�생?�을 지?�하??'?�만???�습지 ?�자?�너' AI?�니??
-      ?�공???�생??최근 ?�습 기록??분석?�여, ???�생만을 ?�한 '개인�?맞춤 ?�크�? ?�용???�성?�세??
+      당신은 최상위권 학생들을 지도하는 '나만의 학습지 디자이너' AI입니다.
+      제공된 학생의 최근 학습 기록을 분석하여, 이 학생만을 위한 '개인화 맞춤 워크북 내용'을 작성하세요.
       
-      [?�크�?구성]
-      1. ?�심 취약??분석: 최근 ?�습?�서 공통?�으�?발견???�점 ?�약
-      2. 개념 ?�시 보기: 취약?�을 극복?�기 ?�한 ?�심 개념 ?�리
-      3. ?�전 과제: ?�생???�습?�야 ??구체?�인 ?�습 미션 3가지
-      4. ?�원 메시지: ?�생?�의 진심 ?�린 격려
+      [워크북 구성]
+      1. 핵심 취약점 분석: 최근 학습에서 공통적으로 발견된 약점 요약
+      2. 개념 다시 보기: 취약점을 극복하기 위한 핵심 개념 정리
+      3. 도전 과제: 학생이 수행해야 할 구체적인 학습 미션 3가지
+      4. 응원 메시지: 학생을 향한 진심 어린 격려
       
-      말투???�문?�이면서??격려가 가?�한 ?�조�??�용?�세??
-      반드??JSON ?�식?�로 ?�답?�세??
+      말투는 전문적이면서도 격려가 가득한 어조를 사용하세요.
+      반드시 JSON 형식으로 응답하세요.
       {
-        "title": "?�크�??�목 (?? 5???�학 ?�화 ?�답 ?�복)",
-        "vulnerability": "분석??취약???�용",
+        "title": "워크북 제목 (예: 5주차 수학 심화 정복)",
+        "vulnerability": "분석된 취약점 내용",
         "concepts": ["개념1", "개념2", "개념3"],
         "missions": ["미션1", "미션2", "미션3"],
-        "message": "?�뜻???�원 메시지"
+        "message": "따뜻한 응원 메시지"
       }
     `
 
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       max_tokens: 2000,
       system: systemPrompt,
       messages: [
-        { role: 'user', content: `???�생???�습 기록??바탕?�로 ?�크북을 만들?�줘:\n${context}` }
+        { role: 'user', content: `이 학생의 학습 기록을 바탕으로 워크북을 만들어줘:\n${context}` }
       ]
     })
 
@@ -67,6 +67,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Workbook Error:', error)
-    return NextResponse.json({ error: '?�크�??�성 �??�류가 발생?�습?�다.' }, { status: 500 })
+    return NextResponse.json({ error: '워크북 생성 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

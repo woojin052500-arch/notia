@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { studentId, goal } = await req.json()
 
     if (!studentId) {
-      return NextResponse.json({ error: '?�생 ID가 ?�요?�니??' }, { status: 400 })
+      return NextResponse.json({ error: '학생 ID가 필요합니다.' }, { status: 400 })
     }
 
     // Initialize Supabase
@@ -35,26 +35,26 @@ export async function POST(req: Request) {
       .limit(20)
 
     const context = `
-      ?�생 ?�름: ${student?.name}
-      목표 ?�???�공: ${goal || '미정'}
-      ?�재 ?�적 ?�이?? ${JSON.stringify(student?.current_grade_info || {})}
-      최근 ?�원 ?�취??추이:
-      ${reports?.map(r => `- [${r.created_at}] ?�취?? ${r.scores?.achievement}/5`).join('\n')}
+      학생 이름: ${student?.name}
+      목표 대학/전공: ${goal || '미정'}
+      현재 성적 데이터: ${JSON.stringify(student?.current_grade_info || {})}
+      최근 학원 성취도 추이:
+      ${reports?.map(r => `- [${r.created_at}] 성취도 ${r.scores?.achievement}/5`).join('\n')}
     `
 
     // 2. AI Analysis (Simulating WJedulab Engine)
     const systemPrompt = `
-      ?�신?� ?�?��?�?최상???�시 ?�이??분석 ?�진 'WJedulab AI'?�니??
-      ?�공???�생???�신, 모의고사 ?�적 �??�원 ???�취??추이�?바탕?�로 ?��? ?�시 ?�측 리포?��? ?�성?�세??
+      당신은 대치동 최상위 입시 데이터 분석 엔진 'WJedulab AI'입니다.
+      제공된 학생의 내신, 모의고사 성적 및 학원 내 성취도 추이를 바탕으로 전문 입시 예측 리포트를 작성하세요.
       
-      [분석 리포??구성]
-      1. ?�격 가?�성 (Probability): 0~100% ?�이???�치?� �?근거
-      2. 강점 분석 (Strengths): ?�시 관?�에?�의 ?�수 ?�소
-      3. ?�략??보완??(Strategies): 목표 ?�성???�해 ?�요??구체?�인 ?�적 ?�상 목표
-      4. WJedulab 총평: ?�이??기반??최종 조언
+      [분석 리포트 구성]
+      1. 합격 가능성 (Probability): 0~100% 사이의 수치와 그 근거
+      2. 강점 분석 (Strengths): 입시 관점에서의 우수 요소
+      3. 전략 및 보완점 (Strategies): 목표 달성을 위해 필요한 구체적인 성적 향상 목표
+      4. WJedulab 총평: 데이터 기반의 최종 조언
       
-      말투??매우 ?�문?�이�??�뢰�??�는 ?�이??분석가 ?�을 ?��??�세??
-      반드??JSON ?�식?�로�??�답?�세??
+      말투는 매우 전문적이고 신뢰감 있는 데이터 분석가 톤을 유지하세요.
+      반드시 JSON 형식으로만 응답하세요.
       {
         "probability": number,
         "strengths": string,
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       max_tokens: 1500,
       system: systemPrompt,
       messages: [
-        { role: 'user', content: `???�생???�시 ?�측 리포?��? ?�성?�줘:\n${context}` }
+        { role: 'user', content: `이 학생의 입시 예측 리포트를 작성해줘:\n${context}` }
       ]
     })
 
@@ -78,6 +78,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Prediction Error:', error)
-    return NextResponse.json({ error: '?�시 ?�측 ?�성 �??�류가 발생?�습?�다.' }, { status: 500 })
+    return NextResponse.json({ error: '입시 예측 생성 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

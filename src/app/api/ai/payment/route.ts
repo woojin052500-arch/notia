@@ -43,9 +43,6 @@ export async function POST(req: Request) {
 
     // AI Generate Payment Reminder
     const systemPrompt = `
-      ?�신?� ?�원 ?�영 ?�문 ?�담가?�니?? 
-      ?��?모님�?결제 ?�내 메시지�?보내???�는?? ?�무 ?�무?�이지 ?�게 ?�생??최근 ?�습 ?�과�?�?��?�며 ?�연?�럽�?결제�??�내?�세??
-      
       당신은 학원 운영 전문 상담가입니다. 
       학부모님께 결제 안내 메시지를 보내려 합니다. 정중하면서도 따뜻하게 최근 학습 결과를 언급하며 자연스럽게 결제를 안내하세요.
       
@@ -67,7 +64,7 @@ export async function POST(req: Request) {
       max_tokens: 1000,
       system: systemPrompt,
       messages: [
-        { role: 'user', content: `${student?.name} ?�생???��?모님�?보낼 ${tone} ?�의 결제 ?�내 문구�??�성?�줘.` }
+        { role: 'user', content: `${student?.name} 학생의 학부모님께 보낼 ${tone} 어조의 결제 안내 문구를 작성해줘.` }
       ]
     })
 
@@ -77,6 +74,6 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Payment AI Error:', error)
-    return NextResponse.json({ error: '결제 ?�내 문구 ?�성 ?�패' }, { status: 500 })
+    return NextResponse.json({ error: '결제 안내 문구 생성 실패' }, { status: 500 })
   }
 }
