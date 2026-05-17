@@ -17,7 +17,8 @@ import {
   ShieldCheck,
   Copy,
   TrendingUp,
-  Share2
+  Share2,
+  Eye
 } from 'lucide-react'
 import Link from 'next/link'
 
