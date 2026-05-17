@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import { createClient } from '@/utils/supabase/client'
 import { 
@@ -24,32 +24,57 @@ export default function AttendanceScanPage() {
   const [lastScanTime, setLastScanTime] = useState(0)
   const supabase = createClient()
 
+  const statusRef = useRef(status)
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      'reader',
-      { 
-        fps: 10, 
-        qrbox: { width: 280, height: 280 },
-        aspectRatio: 1.0
-      },
-      /* verbose= */ false
-    )
+    statusRef.current = status
+  }, [status])
 
-    scanner.render(onScanSuccess, onScanFailure)
+  useEffect(() => {
+    let isMounted = true
+    let scanner: Html5QrcodeScanner | null = null
+
+    const timer = setTimeout(() => {
+      if (!isMounted) return
+      
+      const readerEl = document.getElementById('reader')
+      if (!readerEl) return
+
+      // Clear any leftovers to avoid double rendering errors in StrictMode
+      readerEl.innerHTML = ''
+
+      try {
+        scanner = new Html5QrcodeScanner(
+          'reader',
+          { 
+            fps: 15, 
+            qrbox: { width: 280, height: 280 },
+            aspectRatio: 1.0
+          },
+          /* verbose= */ false
+        )
+        scanner.render(onScanSuccess, onScanFailure)
+      } catch (err) {
+        console.error('Failed to initialize scanner:', err)
+      }
+    }, 150)
 
     function onScanFailure(error: any) {
-      // Quietly ignore scan failures (common when no QR is in frame)
+      // Quietly ignore scan failures
     }
 
     return () => {
-      scanner.clear().catch(error => {
-        console.error("Failed to clear scanner", error);
-      });
+      isMounted = false
+      clearTimeout(timer)
+      if (scanner) {
+        scanner.clear().catch(error => {
+          console.error("Failed to clear scanner", error);
+        });
+      }
     }
   }, [])
 
   async function onScanSuccess(decodedText: string) {
-    if (status === 'success' || status === 'scanning') return 
+    if (statusRef.current === 'success' || statusRef.current === 'scanning') return 
 
     // Per-student cooldown (30 seconds)
     const now_ts = Date.now()

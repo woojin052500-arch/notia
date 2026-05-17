@@ -34,13 +34,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: '학생을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 2. Check today's attendance
-    const today = new Date().toISOString().split('T')[0]
+    // 2. Check today's attendance (synchronized with KST date)
+    const now = new Date()
+    const kstOffset = 9 * 60 * 60 * 1000
+    const kstDate = new Date(now.getTime() + kstOffset).toISOString().split('T')[0]
+
     const { data: existing, error: existingError } = await supabase
       .from('attendance')
       .select('*')
       .eq('student_id', student.id)
-      .eq('created_at', today)
+      .eq('created_at', kstDate)
       .maybeSingle()
 
     let type = ''
@@ -54,7 +57,8 @@ export async function POST(req: Request) {
           student_id: student.id,
           academy_id: student.academy_id,
           check_in: new Date().toISOString(),
-          status: 'present'
+          status: 'present',
+          created_at: kstDate
         }])
       
       if (insertError) throw insertError

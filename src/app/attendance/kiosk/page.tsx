@@ -17,9 +17,20 @@ export default function AttendanceKioskPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
+  
+  const loadingRef = useRef(loading)
+  const scanResultRef = useRef(scanResult)
+
+  useEffect(() => {
+    loadingRef.current = loading
+  }, [loading])
+
+  useEffect(() => {
+    scanResultRef.current = scanResult
+  }, [scanResult])
 
   async function onScanSuccess(decodedText: string) {
-    if (loading || scanResult) return
+    if (loadingRef.current || scanResultRef.current) return
     
     setLoading(true)
     setError(null)
@@ -56,19 +67,36 @@ export default function AttendanceKioskPage() {
   }
 
   useEffect(() => {
-    scannerRef.current = new Html5QrcodeScanner(
-      'reader',
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-      },
-      /* verbose= */ false
-    )
+    let isMounted = true
 
-    scannerRef.current.render(onScanSuccess, onScanFailure)
+    const timer = setTimeout(() => {
+      if (!isMounted) return
+      
+      const readerEl = document.getElementById('reader')
+      if (!readerEl) return
+
+      // Clear any leftovers to avoid double rendering errors in StrictMode
+      readerEl.innerHTML = ''
+
+      try {
+        scannerRef.current = new Html5QrcodeScanner(
+          'reader',
+          { 
+            fps: 15, 
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+          },
+          /* verbose= */ false
+        )
+        scannerRef.current.render(onScanSuccess, onScanFailure)
+      } catch (err) {
+        console.error('Failed to initialize scanner:', err)
+      }
+    }, 150)
 
     return () => {
+      isMounted = false
+      clearTimeout(timer)
       if (scannerRef.current) {
         scannerRef.current.clear().catch(error => {
           console.error('Failed to clear scanner', error)
