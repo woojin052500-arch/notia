@@ -15,7 +15,8 @@ import {
   BookOpen,
   Plus,
   Trash2,
-  Loader2
+  Loader2,
+  Send
 } from 'lucide-react'
 
 export default function PaymentManagementPage() {
@@ -24,6 +25,7 @@ export default function PaymentManagementPage() {
   const [aiMessage, setAiMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const [sendingSms, setSendingSms] = useState(false)
   
   // Textbook management states
   const [studentTextbooks, setStudentTextbooks] = useState<any[]>([])
@@ -109,6 +111,36 @@ export default function PaymentManagementPage() {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(aiMessage)
     alert('안내 문구가 복사되었습니다. 학부모님께 전달해 주세요!')
+  }
+
+  const handleSendSms = async () => {
+    if (!selectedStudent || !aiMessage) return
+    setSendingSms(true)
+    try {
+      const res = await fetch('/api/sms/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: selectedStudent.parent_phone,
+          text: aiMessage
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        if (data.mode === 'live') {
+          alert('솔라피를 통해 학부모님께 실시간 문자 메시지가 성공적으로 발송되었습니다!')
+        } else {
+          alert('데모 체험 모드: 솔라피 문자 메시지 전송 시뮬레이션이 완료되었습니다!\n(발송 번호 설정 시 실시간으로 발송됩니다)')
+        }
+      } else {
+        alert('문자 발송 실패: ' + (data.error || '알 수 없는 오류'))
+      }
+    } catch (err: any) {
+      console.error(err)
+      alert('문자 발송 중 오류가 발생했습니다: ' + err.message)
+    } finally {
+      setSendingSms(false)
+    }
   }
 
   // Charge a new textbook fee
@@ -460,13 +492,27 @@ export default function PaymentManagementPage() {
                 </div>
 
                 {aiMessage && !generating && (
-                  <button 
-                    onClick={copyToClipboard}
-                    className="absolute bottom-8 right-8 px-10 py-5 bg-[#0066FF] text-white rounded-[2rem] font-black text-sm flex items-center gap-3 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-500/30 active:scale-95"
-                  >
-                    <Copy className="w-4 h-4" />
-                    안내 문구 복사하기
-                  </button>
+                  <div className="absolute bottom-8 right-8 flex gap-4">
+                    <button 
+                      onClick={copyToClipboard}
+                      className="px-8 py-5 bg-white text-gray-700 rounded-[2rem] border border-gray-200 font-black text-sm flex items-center gap-2 hover:bg-gray-50 transition-all shadow-md active:scale-95"
+                    >
+                      <Copy className="w-4 h-4" />
+                      안내 문구 복사
+                    </button>
+                    <button 
+                      onClick={handleSendSms}
+                      disabled={sendingSms}
+                      className="px-8 py-5 bg-[#0066FF] text-white rounded-[2rem] font-black text-sm flex items-center gap-2 hover:bg-blue-700 transition-all shadow-2xl shadow-blue-500/30 active:scale-95 disabled:opacity-50"
+                    >
+                      {sendingSms ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      솔라피로 바로 전송
+                    </button>
+                  </div>
                 )}
               </div>
 
