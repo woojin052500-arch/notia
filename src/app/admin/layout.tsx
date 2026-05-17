@@ -291,25 +291,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-black">새 알림 3개</span>
                   </div>
                   <div className="space-y-4">
-                    <div className="p-3 bg-red-50/50 border border-red-100/50 rounded-2xl flex items-start gap-3">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 shrink-0 animate-pulse"></div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900 leading-snug">이용권 만료 5일 전</p>
-                        <p className="text-[10px] text-gray-500 font-medium mt-1">원장님, Notia 이용권이 5일 뒤 만료됩니다. 결제를 확인해 주세요.</p>
-                      </div>
-                    </div>
                     <div className="p-3 bg-blue-50/50 border border-blue-100/50 rounded-2xl flex items-start gap-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0 animate-pulse"></div>
                       <div>
-                        <p className="text-xs font-bold text-gray-900 leading-snug">신규 학생 등록 알림</p>
-                        <p className="text-[10px] text-gray-500 font-medium mt-1">학원 스마트 인명부에 새로운 학생이 성공적으로 등록되었습니다.</p>
+                        <p className="text-xs font-bold text-gray-900 leading-snug">Notia 환영합니다! 🎉</p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-1">원장님, AI 기반 스마트 학원 관리 OS Notia가 성공적으로 세팅되었습니다.</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-green-50/50 border border-green-100/50 rounded-2xl flex items-start gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 shrink-0 animate-pulse"></div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-900 leading-snug">출결 스캐너 준비 완료</p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-1">스마트 QR 출결 스캐너 시스템이 실시간 대기 상태입니다.</p>
                       </div>
                     </div>
                     <div className="p-3 bg-gray-50/50 border border-gray-100/50 rounded-2xl flex items-start gap-3">
                       <div className="w-2 h-2 bg-gray-400 rounded-full mt-1.5 shrink-0"></div>
                       <div>
-                        <p className="text-xs font-bold text-gray-700 leading-snug">스마트 출결 알림</p>
-                        <p className="text-[10px] text-gray-500 font-medium mt-1">출결 스캐너 시스템이 정상 가동 중입니다.</p>
+                        <p className="text-xs font-bold text-gray-700 leading-snug">스타터 혜택 이용 중</p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-1">현재 모든 스마트 기능이 잠금 해제된 프로모션 요금제를 무료로 적용받고 계십니다.</p>
                       </div>
                     </div>
                   </div>

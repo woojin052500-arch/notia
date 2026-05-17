@@ -64,57 +64,14 @@ export default function StudentsPage() {
         
         if (acadError) throw acadError
         
-        let academyData = academyRows && academyRows[0]
-        if (!academyData) {
-          // 1. 프로필이 데이터베이스에 존재해야 academies가 참조할 수 있으므로 선제적으로 프로필을 조회/생성합니다.
-          const { data: profileRows, error: checkProfError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .limit(1)
-          
-          if (checkProfError) throw checkProfError
-          let profile = profileRows && profileRows[0]
-          
-          if (!profile) {
-            const { data: newProfile, error: createProfError } = await supabase
-              .from('profiles')
-              .insert([{
-                id: user.id,
-                full_name: user.user_metadata?.full_name || '원장 선생님',
-                email: user.email || '',
-                role: 'director'
-              }])
-              .select()
-            
-            if (createProfError) throw createProfError
-            if (newProfile) profile = newProfile[0]
-          }
-          
-          // 2. 프로필이 완벽히 존재할 때만 학원을 생성하여 외래키 에러를 예방합니다.
-          if (profile) {
-            const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
-            const { data: newAcademy, error: createAcadError } = await supabase
-              .from('academies')
-              .insert([{ 
-                owner_id: user.id, 
-                name: '노티아 학원', 
-                slug: slug,
-                status: 'active',
-                plan_type: 'starter'
-              }])
-              .select()
-            
-            if (createAcadError) throw createAcadError
-            if (newAcademy) academyData = newAcademy[0]
-          }
-        }
+        const academyData = academyRows && academyRows[0]
         
         if (academyData) {
           setAcademy(academyData)
           setAcademyId(academyData.id)
           await fetchStudents()
         } else {
+          // 학원이 아직 없는 경우 (레이아웃에서 생성 중), 로딩 완료 상태로 전환하여 안전하게 대기합니다.
           setLoading(false)
         }
       } catch (err: any) {
