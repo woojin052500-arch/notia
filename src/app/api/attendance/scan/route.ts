@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // 1. Find student
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .select('id, name, academy_id, estimated_travel_time, parent_phone')
+      .select('id, name, academy_id, estimated_travel_time, parent_phone, academies(name)')
       .eq('qr_token', qrToken)
       .single()
 
@@ -122,17 +122,19 @@ export async function POST(req: Request) {
         try {
           const { SolapiMessageService } = await import('solapi')
           const messageService = new SolapiMessageService(apiKey, apiSecret)
+          const academyName = (student.academies as any)?.name || '학원'
           await messageService.send({
             to: student.parent_phone,
             from: senderNumber,
-            text: `[Notia 출결 알림] ${notificationMsg}`
+            text: `[${academyName}] ${notificationMsg}`
           })
           console.log(`[SOLAPI ATTENDANCE SMS SUCCESS] TO: ${student.parent_phone}`);
         } catch (smsErr) {
           console.error('[SOLAPI ATTENDANCE SMS CRITICAL ERROR]', smsErr)
         }
       } else {
-        console.log(`[SOLAPI ATTENDANCE MOCK SMS] TO: ${student.parent_phone} | TEXT: [Notia 출결 알림] ${notificationMsg}`);
+        const academyName = (student.academies as any)?.name || '학원'
+        console.log(`[SOLAPI ATTENDANCE MOCK SMS] TO: ${student.parent_phone} | TEXT: [${academyName}] ${notificationMsg}`);
       }
     }
 
