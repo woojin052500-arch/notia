@@ -41,6 +41,8 @@ export async function POST(req: Request) {
       ? `추가 청구될 교재비 내역: ${unpaidTextbooks.map(tb => `${tb.textbook_name}(${tb.textbook_price}원)`).join(', ')}`
       : '추가 교재비 없음';
 
+    const academyName = (student?.academies as any)?.name || '학원';
+
     // AI Generate Payment Reminder
     const systemPrompt = `
       당신은 학원 운영 전문 상담가입니다. 
@@ -58,6 +60,8 @@ export async function POST(req: Request) {
       4. 결제 방식은 계좌 입금 대신 "학생 편에 학원 카드를 보내주시면 결제해 드리겠습니다" 또는 "학원으로 카드를 보내주시면 즉시 결제 도와드리겠습니다"라는 안내로 작성하세요. 계좌번호나 입금 안내는 절대로 포함하지 마세요.
       5. 면책 조항은 포함하지 마세요.
       6. 절대로 마크다운 강조 표시(예: **텍스트**, *텍스트*, # 등)나 별표(*)를 사용하지 마세요. 문자메시지로 복사하여 즉시 발송할 수 있도록 특수 마크다운 강조 기호 없이 깨끗한 순수 일반 텍스트로만 대본을 작성해 주세요.
+      7. 문자의 맨 첫 줄(헤드라인)은 반드시 "[${academyName}] 원비 안내" 또는 "[${academyName}] 결제 예정 안내"와 같은 형식으로 시작해야 합니다.
+      8. 대본 본문 전체에서도 "안녕하세요, ${academyName}입니다"처럼 ${academyName}의 이름을 정확하게 자연스럽게 사용하여 작성해야 합니다.
     `
 
     // --- High Performance AI with Haiku Failover ---

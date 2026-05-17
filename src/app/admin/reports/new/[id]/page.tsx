@@ -132,7 +132,8 @@ export default function NewReportPage() {
       setSaving(false)
     } else if (data) {
       const publicLink = `${window.location.origin}/report/${data.id}`
-      const smsFormat = `[리포트 알림] ${student.name} 학생의 오늘 학습 리포트가 도착했습니다.\n\n▶ 리포트 확인하기:\n${publicLink}\n\n오늘도 정성을 다해 지도했습니다. 감사합니다.`
+      const academyName = academy?.name || '학원'
+      const smsFormat = `[${academyName} 학습리포트] ${student.name} 학생의 오늘 학습 리포트가 도착했습니다.\n\n▶ 리포트 확인하기:\n${publicLink}\n\n오늘도 정성을 다해 지도했습니다. 감사합니다.`
       
       setReportUrl(publicLink)
       setSmsText(smsFormat)
