@@ -62,14 +62,27 @@ export async function POST(req: Request) {
       말투는 선생님이 바로 읽거나 참고할 수 있도록 구어체(~요, ~습니다)를 사용하세요.
     `
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 2000,
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: `이 학생의 누적 데이터를 분석해서 상담 대본을 짜줘:\n${context}` }
-      ]
-    })
+    let response;
+    try {
+      response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: `이 학생의 누적 데이터를 분석해서 상담 대본을 짜줘:\n${context}` }
+        ]
+      })
+    } catch (sonnetErr) {
+      console.warn('Sonnet-4-6 failed, trying Haiku-4-5 fallback:', sonnetErr);
+      response = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: `이 학생의 누적 데이터를 분석해서 상담 대본을 짜줘:\n${context}` }
+        ]
+      })
+    }
 
     const script = response.content[0].type === 'text' ? response.content[0].text : ''
 

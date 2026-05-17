@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     let message;
     try {
       message = await anthropic.messages.create({
-        model: 'claude-3-5-sonnet-latest', 
+        model: 'claude-sonnet-4-6', 
         max_tokens: 1500,
         temperature: 0.7,
         system: systemPrompt,
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     } catch (sonnetError) {
       console.warn('Sonnet failed, trying Haiku model fallback:', sonnetError);
       message = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307', 
+        model: 'claude-haiku-4-5-20251001', 
         max_tokens: 1500,
         temperature: 0.7,
         system: systemPrompt,
