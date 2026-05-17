@@ -214,6 +214,17 @@ export default function NewReportPage() {
               <p className="text-xs font-bold text-gray-600 whitespace-pre-wrap leading-relaxed bg-white p-3 rounded-xl border border-gray-100 max-h-32 overflow-y-auto">
                 {smsText}
               </p>
+              {reportUrl && (
+                <a
+                  href={reportUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 w-full py-3 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  학부모용 리포트 웹페이지(링크) 직접 확인하기
+                </a>
+              )}
             </div>
 
             {/* 인터랙티브 전송 버튼 세트 */}
