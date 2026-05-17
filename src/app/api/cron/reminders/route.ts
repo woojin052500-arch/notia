@@ -148,8 +148,8 @@ ${student.name} 학생의 원비 수납 예정일이 ${daysLeft}일 전(${studen
 - 기본 수업료: ${baseTuition.toLocaleString()}원${textbookInfoText}
 - 총 합산 금액: ${totalAmount.toLocaleString()}원
 
-■ 입금 계좌: NH농협 3516376760453 (${academyName})
-원활한 수업 진행과 학원 운영을 위해 기한 내에 수납해 주시면 감사하겠습니다.`
+■ 결제 안내: 학생 편에 학원 카드를 보내주시면 결제 도와드리겠습니다.
+원활한 수업 진행과 학원 운영을 위해 기한 내 확인 부탁드립니다.`
 
       if (isSmsEnabled && messageService) {
         try {
