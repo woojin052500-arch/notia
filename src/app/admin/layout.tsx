@@ -53,32 +53,72 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     const getUserData = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (authUser) {
-        setAuthUser(authUser)
-        const { data: profileRows } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', authUser.id)
-          .limit(1)
-        
-        const { data: academyRows } = await supabase
-          .from('academies')
-          .select('*')
-          .eq('owner_id', authUser.id)
-          .limit(1)
-        
-        const profile = profileRows && profileRows[0]
-        const academyData = academyRows && academyRows[0]
-        
-        setUser(profile)
-        setAcademy(academyData)
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          setAuthUser(authUser)
+          
+          // 1. 프로필 조회 및 자동 복구 생성
+          const { data: profileRows } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', authUser.id)
+            .limit(1)
+          
+          let profile = profileRows && profileRows[0]
+          if (!profile) {
+            const { data: newProfile, error: createProfError } = await supabase
+              .from('profiles')
+              .insert([{
+                id: authUser.id,
+                full_name: authUser.user_metadata?.full_name || '원장 선생님',
+                email: authUser.email || '',
+                role: 'director'
+              }])
+              .select()
+            
+            if (!createProfError && newProfile) {
+              profile = newProfile[0]
+            }
+          }
+          
+          // 2. 학원 조회 및 자동 복구 생성
+          const { data: academyRows } = await supabase
+            .from('academies')
+            .select('*')
+            .eq('owner_id', authUser.id)
+            .limit(1)
+          
+          let academyData = academyRows && academyRows[0]
+          if (!academyData) {
+            const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
+            const { data: newAcademy, error: createAcadError } = await supabase
+              .from('academies')
+              .insert([{ 
+                owner_id: authUser.id, 
+                name: '노티아 학원', 
+                slug: slug,
+                status: 'active', // 바로 활성화하여 원활히 테스트할 수 있도록 함
+                plan_type: 'starter'
+              }])
+              .select()
+            
+            if (!createAcadError && newAcademy) {
+              academyData = newAcademy[0]
+            }
+          }
+          
+          setUser(profile)
+          setAcademy(academyData)
 
-        // Subscription Check: if not active, force pricing modal (bypass for dev/woojin0525)
-        if (academyData && academyData.status !== 'active' && profile?.role !== 'dev' && !authUser?.email?.includes('woojin0525')) {
-          setIsSubscribed(false)
-          setIsPricingOpen(true)
+          // Subscription Check: if not active, force pricing modal (bypass for dev/woojin0525)
+          if (academyData && academyData.status !== 'active' && profile?.role !== 'dev' && !authUser?.email?.includes('woojin0525')) {
+            setIsSubscribed(false)
+            setIsPricingOpen(true)
+          }
         }
+      } catch (err) {
+        console.error('Error auto-healing layout data:', err)
       }
     }
     getUserData()

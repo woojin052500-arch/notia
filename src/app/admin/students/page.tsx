@@ -64,7 +64,23 @@ export default function StudentsPage() {
         
         if (acadError) throw acadError
         
-        const academyData = academyRows && academyRows[0]
+        let academyData = academyRows && academyRows[0]
+        if (!academyData) {
+          const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
+          const { data: newAcademy, error: createAcadError } = await supabase
+            .from('academies')
+            .insert([{ 
+              owner_id: user.id, 
+              name: '노티아 학원', 
+              slug: slug,
+              status: 'active',
+              plan_type: 'starter'
+            }])
+            .select()
+          
+          if (createAcadError) throw createAcadError
+          if (newAcademy) academyData = newAcademy[0]
+        }
         
         if (academyData) {
           setAcademy(academyData)
