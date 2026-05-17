@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     // 1. Find student
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .select('id, name, academy_id, estimated_travel_time, parent_phone, academies(min_attendance_minutes)')
+      .select('id, name, academy_id, estimated_travel_time, parent_phone, academies(id)')
       .eq('qr_token', qrToken)
       .single()
 
@@ -68,8 +68,7 @@ export async function POST(req: Request) {
       const checkOutTime = new Date()
       
       // Minimum Attendance Time Check
-      const academiesData = student.academies as any;
-      const minMinutes = (Array.isArray(academiesData) ? academiesData[0]?.min_attendance_minutes : academiesData?.min_attendance_minutes) || 50;
+      const minMinutes = 50;
       const checkInTime = new Date(existing.check_in);
       const elapsedMinutes = (checkOutTime.getTime() - checkInTime.getTime()) / 60000;
       
