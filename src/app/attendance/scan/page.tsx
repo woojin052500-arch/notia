@@ -20,8 +20,8 @@ export default function AttendanceScanPage() {
   const [status, setStatus] = useState<'idle' | 'scanning' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [recentScans, setRecentScans] = useState<any[]>([])
-  const [lastScannedToken, setLastScannedToken] = useState('')
-  const [lastScanTime, setLastScanTime] = useState(0)
+  const lastScannedTokenRef = useRef('')
+  const lastScanTimeRef = useRef(0)
   const supabase = createClient()
 
   const statusRef = useRef(status)
@@ -78,14 +78,14 @@ export default function AttendanceScanPage() {
 
     // Per-student cooldown (15 seconds)
     const now_ts = Date.now()
-    if (decodedText === lastScannedToken && now_ts - lastScanTime < 15000) {
+    if (decodedText === lastScannedTokenRef.current && now_ts - lastScanTimeRef.current < 15000) {
       console.log('Cooldown active for this QR token')
       return
     }
 
     setStatus('scanning')
-    setLastScannedToken(decodedText)
-    setLastScanTime(now_ts)
+    lastScannedTokenRef.current = decodedText
+    lastScanTimeRef.current = now_ts
     
     try {
       // 1. Post to API to bypass RLS with Service Role or safe queries
