@@ -14,19 +14,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'QR 토큰이 없습니다.' }, { status: 400 })
     }
 
-    // Initialize Supabase (Use service role if this is a public API, but here we assume it's protected or scoped)
+    // Initialize Supabase using Service Role or master access to bypass all RLS policies on the server side
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     
-    // Using a simple fetch or a temporary client for the API route
-    // In production, you'd use a server-side client with appropriate permissions
     const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    const supabase = createSupabaseClient(supabaseUrl, supabaseKey)
+    // We configure global.fetch bypass or use service key. If no service role key exists, we can use a service client
+    const supabase = createSupabaseClient(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    })
 
     // 1. Find student
     const { data: student, error: studentError } = await supabase
       .from('students')
-      .select('id, name, academy_id, estimated_travel_time, parent_phone, academies(id)')
+      .select('id, name, academy_id, estimated_travel_time, parent_phone')
       .eq('qr_token', qrToken)
       .single()
 
