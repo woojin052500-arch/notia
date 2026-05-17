@@ -67,17 +67,6 @@ export async function POST(req: Request) {
       // 4. Check-out
       const checkOutTime = new Date()
       
-      // Minimum Attendance Time Check
-      const minMinutes = 50;
-      const checkInTime = new Date(existing.check_in);
-      const elapsedMinutes = (checkOutTime.getTime() - checkInTime.getTime()) / 60000;
-      
-      if (elapsedMinutes < minMinutes) {
-        return NextResponse.json({
-          error: `최소 학습 시간(${minMinutes}분)이 지나지 않아 하원할 수 없습니다. (현재 ${Math.floor(elapsedMinutes)}분 경과)`
-        }, { status: 400 });
-      }
-
       const travelMinutes = student.estimated_travel_time || 15
       const arrivalTime = new Date(checkOutTime.getTime() + travelMinutes * 60000)
       predictedArrival = arrivalTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })

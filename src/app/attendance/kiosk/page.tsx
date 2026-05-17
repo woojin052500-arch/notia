@@ -29,11 +29,23 @@ export default function AttendanceKioskPage() {
     scanResultRef.current = scanResult
   }, [scanResult])
 
+  const lastScannedTokenRef = useRef('')
+  const lastScanTimeRef = useRef(0)
+
   async function onScanSuccess(decodedText: string) {
     if (loadingRef.current || scanResultRef.current) return
     
+    // Per-student cooldown (15 seconds)
+    const now_ts = Date.now()
+    if (decodedText === lastScannedTokenRef.current && now_ts - lastScanTimeRef.current < 15000) {
+      console.log('Cooldown active for this QR token')
+      return
+    }
+
     setLoading(true)
     setError(null)
+    lastScannedTokenRef.current = decodedText
+    lastScanTimeRef.current = now_ts
     
     try {
       const response = await fetch('/api/attendance/scan', {

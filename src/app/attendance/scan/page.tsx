@@ -76,9 +76,9 @@ export default function AttendanceScanPage() {
   async function onScanSuccess(decodedText: string) {
     if (statusRef.current === 'success' || statusRef.current === 'scanning') return 
 
-    // Per-student cooldown (30 seconds)
+    // Per-student cooldown (15 seconds)
     const now_ts = Date.now()
-    if (decodedText === lastScannedToken && now_ts - lastScanTime < 30000) {
+    if (decodedText === lastScannedToken && now_ts - lastScanTime < 15000) {
       console.log('Cooldown active for this QR token')
       return
     }
