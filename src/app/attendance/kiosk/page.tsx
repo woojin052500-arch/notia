@@ -140,7 +140,7 @@ export default function AttendanceKioskPage() {
             {scanResult && (
               <div className="absolute inset-0 bg-green-500 flex flex-col items-center justify-center z-50 animate-in fade-in zoom-in duration-300">
                 <CheckCircle2 className="w-24 h-24 text-white mb-6 animate-bounce" />
-                <h2 className="text-4xl font-black text-white mb-2">{scanResult.student}</h2>
+                <h2 className="text-4xl font-black text-white mb-2">{scanResult.studentName}</h2>
                 <p className="text-white text-xl font-bold opacity-90">
                   {scanResult.type === 'check-in' ? '반가워요! 등원 완료' : '수고했어요! 하원 완료'}
                 </p>

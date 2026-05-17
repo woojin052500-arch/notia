@@ -88,81 +88,26 @@ export default function AttendanceScanPage() {
     setLastScanTime(now_ts)
     
     try {
-      // 1. Student identification by QR Token
-      const { data: student, error: sError } = await supabase
-        .from('students')
-        .select('*, academies(name)')
-        .eq('qr_token', decodedText)
-        .single()
+      // 1. Post to API to bypass RLS with Service Role or safe queries
+      const response = await fetch('/api/attendance/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ qrToken: decodedText })
+      })
 
-      if (sError || !student) {
-        throw new Error('등록되지 않은 QR 코드입니다.')
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || '출결 처리 중 오류가 발생했습니다.')
       }
 
-      // 2. Attendance Check-in/out logic
-      const now = new Date()
-      // KST Date calculation (UTC+9)
-      const kstOffset = 9 * 60 * 60 * 1000
-      const kstDate = new Date(now.getTime() + kstOffset).toISOString().split('T')[0]
-      
-      const { data: latestAttendance, error: aError } = await supabase
-        .from('attendance')
-        .select('*')
-        .eq('student_id', student.id)
-        .eq('created_at', kstDate)
-        .order('check_in', { ascending: false })
-        .limit(1)
-        .maybeSingle()
+      const resultMsg = data.type === 'check-in' 
+        ? `${data.studentName} 학생, 등원 처리가 완료되었습니다.`
+        : `${data.studentName} 학생, 하원 처리가 완료되었습니다.`
 
-      if (aError) {
-        console.error('Attendance lookup error:', aError)
-        throw new Error('출결 정보를 불러오는 중 오류가 발생했습니다.')
-      }
-
-      let resultMsg = ''
-      if (!latestAttendance) {
-        // No record today -> Check-in
-        await supabase.from('attendance').insert({
-          student_id: student.id,
-          academy_id: student.academy_id,
-          status: 'present',
-          check_in: new Date().toISOString(),
-          created_at: kstDate // Force KST date
-        })
-        resultMsg = `${student.name} 학생, 등원 처리가 완료되었습니다.`
-      } else if (!latestAttendance.check_out) {
-        // Minimum Attendance Time Check
-        const minMinutes = 50;
-        const checkInTime = new Date(latestAttendance.check_in);
-        const elapsedMinutes = (now.getTime() - checkInTime.getTime()) / 60000;
-        
-        if (elapsedMinutes < minMinutes) {
-          throw new Error(`최소 학습 시간(${minMinutes}분)이 지나지 않아 하원할 수 없습니다. (현재 ${Math.floor(elapsedMinutes)}분 경과)`);
-        }
-
-        await supabase
-          .from('attendance')
-          .update({ 
-            check_out: new Date().toISOString(), 
-            status: 'left' 
-          })
-          .eq('id', latestAttendance.id)
-        resultMsg = `${student.name} 학생, 하원 처리가 완료되었습니다.`
-      } else {
-        // Already checked out -> Start a NEW check-in (supports multiple visits per day)
-        await supabase.from('attendance').insert({
-          student_id: student.id,
-          academy_id: student.academy_id,
-          status: 'present',
-          check_in: new Date().toISOString(),
-          created_at: kstDate // Force KST date
-        })
-        resultMsg = `${student.name} 학생, 다시 등원 처리가 되었습니다.`
-      }
-
-      setScanResult({ name: student.name, message: resultMsg })
+      setScanResult({ name: data.studentName, message: resultMsg })
       setStatus('success')
-      setRecentScans(prev => [{ name: student.name, time: new Date().toLocaleTimeString(), status: resultMsg.includes('등원') ? '등원' : '하원' }, ...prev].slice(0, 5))
+      setRecentScans(prev => [{ name: data.studentName, time: new Date().toLocaleTimeString(), status: data.type === 'check-in' ? '등원' : '하원' }, ...prev].slice(0, 5))
 
       // Auto reset after 3 seconds
       setTimeout(() => {
@@ -203,7 +148,7 @@ export default function AttendanceScanPage() {
           <div className="relative h-full bg-white/[0.02] border border-white/10 rounded-[3.5rem] overflow-hidden flex flex-col items-center justify-center p-12">
             
             {/* Success Overlay */}
-            {status === 'success' && (
+            {status === 'success' && scanResult && (
               <div className="absolute inset-0 z-30 bg-green-600/90 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
                 <CheckCircle2 className="w-32 h-32 text-white mb-8 animate-bounce" />
                 <h2 className="text-4xl font-black text-white mb-2">{scanResult.name}</h2>

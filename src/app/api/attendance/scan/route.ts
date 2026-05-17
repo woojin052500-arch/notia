@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ 
       success: true, 
       type, 
-      student: student.name,
+      studentName: student.name,
       time: new Date().toLocaleTimeString('ko-KR'),
       predictedArrival: type === 'check-out' ? predictedArrival : null,
       notification: notificationMsg
