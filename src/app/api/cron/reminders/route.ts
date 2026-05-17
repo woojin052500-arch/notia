@@ -3,98 +3,130 @@ import { createClient } from '@supabase/supabase-js'
 import { SolapiMessageService } from 'solapi'
 
 export async function GET(req: Request) {
-  // 1. 보안 설정: Vercel Cron 등 지정된 요청만 허용 (옵션)
+  // 1. 보안 설정: Vercel Cron 등 지정된 요청 또는 auth secret 허용
   const authHeader = req.headers.get('authorization')
   if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // If not a bearer match, check if URL contains cron token as query param
+    const { searchParams } = new URL(req.url)
+    const token = searchParams.get('token')
+    if (token !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY // Service role to bypass RLS in CRON
 
   if (!supabaseUrl || !supabaseKey) {
-    console.error('Supabase configuration missing');
-    return NextResponse.json({ error: 'Database configuration missing' }, { status: 500 });
+    console.error('Supabase service role configuration missing')
+    return NextResponse.json({ error: 'Database configuration missing' }, { status: 500 })
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
     const today = new Date()
     
-    // 만료 5일 전 타겟 날짜
+    // 5일 전 결제 예정 타겟
     const target5Days = new Date(today)
     target5Days.setDate(today.getDate() + 5)
     const targetDate5DaysStr = target5Days.toISOString().split('T')[0]
 
-    // 만료 1일 전 타겟 날짜
+    // 1일 전 결제 예정 타겟
     const target1Day = new Date(today)
     target1Day.setDate(today.getDate() + 1)
     const targetDate1DayStr = target1Day.toISOString().split('T')[0]
 
-    // 2. 만료 예정인 학원(원장님) 조회 (plan_expires_at 필드 사용 가정)
-    // 주의: profiles 테이블에 원장님의 전화번호(phone)가 있다고 가정합니다.
-    const { data: expiringAcademies, error } = await supabase
-      .from('academies')
+    // 2. 결제 예정인 학생 조회
+    const { data: targetStudents, error: studentError } = await supabase
+      .from('students')
       .select(`
         id,
         name,
-        plan_expires_at,
-        owner_id,
-        profiles!academies_owner_id_fkey(full_name, email, phone)
+        parent_phone,
+        next_payment_date,
+        academy_id,
+        academies(name)
       `)
-      .in('plan_expires_at', [targetDate5DaysStr, targetDate1DayStr])
+      .in('next_payment_date', [targetDate5DaysStr, targetDate1DayStr])
       .eq('status', 'active')
 
-    if (error) throw error
+    if (studentError) throw studentError
 
-    if (!expiringAcademies || expiringAcademies.length === 0) {
-      return NextResponse.json({ message: 'No expiring academies found for today.' })
+    if (!targetStudents || targetStudents.length === 0) {
+      return NextResponse.json({ message: 'No student payment reminders due today.' })
     }
 
     const results = []
 
-    // 3. 각 원장님에게 알림 발송 처리
-    for (const academy of expiringAcademies) {
-      const owner = Array.isArray(academy.profiles) ? academy.profiles[0] : academy.profiles;
-      if (!owner || !owner.phone) {
-        console.warn(`[알림 실패] 학원 ${academy.name}의 원장님 연락처가 없습니다.`);
-        continue;
+    // 3. 솔라피 메세지 서비스 초기화
+    const solapiApiKey = process.env.SOLAPI_API_KEY
+    const solapiApiSecret = process.env.SOLAPI_API_SECRET
+    const solapiSenderNumber = process.env.SOLAPI_SENDER_NUMBER
+
+    const isSmsEnabled = !!(solapiApiKey && solapiApiSecret && solapiSenderNumber)
+    const messageService = isSmsEnabled 
+      ? new SolapiMessageService(solapiApiKey!, solapiApiSecret!) 
+      : null
+
+    for (const student of targetStudents) {
+      const academyName = student.academies?.name || '노티아 학원'
+      const daysLeft = student.next_payment_date === targetDate5DaysStr ? 5 : 1
+
+      // 해당 학생의 미청구 교재비 조회 및 합산
+      const { data: unpaidTextbooks } = await supabase
+        .from('student_textbooks')
+        .select('textbook_name, textbook_price')
+        .eq('student_id', student.id)
+        .eq('is_billed', false)
+
+      const baseTuition = 190000 // 기본 원비 19만원
+      const textbookSum = unpaidTextbooks 
+        ? unpaidTextbooks.reduce((acc, curr) => acc + curr.textbook_price, 0)
+        : 0
+      const totalAmount = baseTuition + textbookSum
+
+      let textbookInfoText = ''
+      if (unpaidTextbooks && unpaidTextbooks.length > 0) {
+        textbookInfoText = `\n- 추가 교재비: ${textbookSum.toLocaleString()}원 (${unpaidTextbooks.map(tb => tb.textbook_name).join(', ')})`
       }
 
-      const daysLeft = academy.plan_expires_at === targetDate5DaysStr ? 5 : 1;
-      const message = 
-        daysLeft === 5 
-        ? `[Notia] 원장님, Notia 이용권이 5일 뒤(${academy.plan_expires_at}) 만료됩니다. 원활한 학원 운영을 위해 미리 연장해주세요! [결제하기: https://notia.com/admin/settings]`
-        : `[Notia] (긴급) 원장님, Notia 이용권이 내일 만료됩니다. 서비스가 중단되지 않도록 지금 바로 결제해주세요! [결제하기: https://notia.com/admin/settings]`
+      // 최종 자동 알림 문자 구성
+      const message = `[${academyName}] 결제 예정 안내
+안녕하세요, ${academyName}입니다.
+${student.name} 학생의 원비 수납 예정일이 ${daysLeft}일 전(${student.next_payment_date})으로 다가와 안내 드립니다.
 
-      // 솔라피 연동 발송 로직
-      if (process.env.SOLAPI_API_KEY && process.env.SOLAPI_API_SECRET && process.env.SOLAPI_SENDER_NUMBER) {
+■ 청구 내역
+- 기본 수업료: ${baseTuition.toLocaleString()}원${textbookInfoText}
+- 총 합산 금액: ${totalAmount.toLocaleString()}원
+
+■ 입금 계좌: NH농협 3516376760453 (${academyName})
+원활한 수업 진행과 학원 운영을 위해 기한 내에 수납해 주시면 감사하겠습니다.`
+
+      // SMS 발송 처리
+      if (isSmsEnabled && messageService) {
         try {
-          const messageService = new SolapiMessageService(process.env.SOLAPI_API_KEY, process.env.SOLAPI_API_SECRET);
-          
           await messageService.send({
-            to: owner.phone,
-            from: process.env.SOLAPI_SENDER_NUMBER,
+            to: student.parent_phone,
+            from: solapiSenderNumber!,
             text: message
-          });
-          console.log(`[알림 발송 성공] TO: ${owner.phone}`);
-          results.push({ academy: academy.name, daysLeft, phone: owner.phone, status: 'sent' });
-        } catch (error) {
-          console.error(`[알림 발송 실패] TO: ${owner.phone}`, error);
-          results.push({ academy: academy.name, daysLeft, phone: owner.phone, status: 'failed', error: String(error) });
+          })
+          console.log(`[수납 문자 발송 성공] TO: ${student.parent_phone} (학생: ${student.name})`)
+          results.push({ student: student.name, phone: student.parent_phone, daysLeft, status: 'sent' })
+        } catch (smsError) {
+          console.error(`[수납 문자 발송 실패] TO: ${student.parent_phone} (학생: ${student.name})`, smsError)
+          results.push({ student: student.name, phone: student.parent_phone, daysLeft, status: 'failed', error: String(smsError) })
         }
       } else {
-        // 환경 변수가 없을 때 시뮬레이션
-        console.log(`[알림 발송 시뮬레이션] TO: ${owner.phone} | CONTENT: ${message}`);
-        results.push({ academy: academy.name, daysLeft, phone: owner.phone, status: 'sent_mock' });
+        console.log(`[수납 문자 시뮬레이션] TO: ${student.parent_phone} | CONTENT:\n${message}`)
+        results.push({ student: student.name, phone: student.parent_phone, daysLeft, status: 'simulated' })
       }
     }
 
-    return NextResponse.json({ success: true, processed: results.length, details: results })
-    
+    return NextResponse.json({ success: true, processedCount: results.length, details: results })
+
   } catch (err: any) {
-    console.error('Cron Reminder Error:', err)
-    return NextResponse.json({ error: '알림 발송 중 오류가 발생했습니다.' }, { status: 500 })
+    console.error('CRITICAL CRON REMINDER ERROR:', err)
+    return NextResponse.json({ error: '수납 알림 발송 중 오류가 발생했습니다: ' + err.message }, { status: 500 })
   }
 }
