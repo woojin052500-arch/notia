@@ -48,19 +48,33 @@ export default function StudentsPage() {
 
   useEffect(() => {
     const initializeData = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError) throw userError
+        if (!user) {
+          setLoading(false)
+          return
+        }
 
-      const { data: academyData } = await supabase
-        .from('academies')
-        .select('*')
-        .eq('owner_id', user.id)
-        .single()
-      
-      if (academyData) {
-        setAcademy(academyData)
-        setAcademyId(academyData.id)
-        fetchStudents()
+        const { data: academyData, error: acadError } = await supabase
+          .from('academies')
+          .select('*')
+          .eq('owner_id', user.id)
+          .single()
+        
+        if (acadError) throw acadError
+        
+        if (academyData) {
+          setAcademy(academyData)
+          setAcademyId(academyData.id)
+          await fetchStudents()
+        } else {
+          setLoading(false)
+        }
+      } catch (err: any) {
+        console.error('Error initializing student page data:', err)
+        alert('데이터를 불러오는 중 오류가 발생했습니다: ' + (err.message || String(err)))
+        setLoading(false)
       }
     }
     initializeData()
