@@ -59,14 +59,28 @@ export async function POST(req: Request) {
       5. 면책 조항은 포함하지 마세요.
     `
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: [
-        { role: 'user', content: `${student?.name} 학생의 학부모님께 보낼 ${tone} 어조의 결제 안내 문구를 작성해줘.` }
-      ]
-    })
+    // --- High Performance AI with Haiku Failover ---
+    let response;
+    try {
+      response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6', 
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: `${student?.name} 학생의 학부모님께 보낼 ${tone} 어조의 결제 안내 문구를 작성해줘.` }
+        ]
+      })
+    } catch (sonnetError) {
+      console.warn('Sonnet failed, trying Haiku model fallback:', sonnetError);
+      response = await anthropic.messages.create({
+        model: 'claude-haiku-4-5-20251001', 
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: `${student?.name} 학생의 학부모님께 보낼 ${tone} 어조의 결제 안내 문구를 작성해줘.` }
+        ]
+      })
+    }
 
     const result = response.content[0].type === 'text' ? response.content[0].text : ''
 

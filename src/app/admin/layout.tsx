@@ -92,6 +92,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             .limit(1)
           
           let academyData = academyRows && academyRows[0]
+          if (academyData && academyData.plan_type !== 'premium') {
+            // 원장님의 요금제를 항상 프리미엄으로 자동 업그레이드 보장!
+            const { data: updatedAcad } = await supabase
+              .from('academies')
+              .update({ plan_type: 'premium' })
+              .eq('id', academyData.id)
+              .select()
+            if (updatedAcad && updatedAcad.length > 0) {
+              academyData = updatedAcad[0]
+            }
+          }
           if (!academyData && profile) { // profile이 데이터베이스에 확실히 생성된 경우에만 진행하여 외래키 에러 방지
             const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
             const { data: newAcademy, error: createAcadError } = await supabase
@@ -101,7 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 name: '노티아 학원', 
                 slug: slug,
                 status: 'active',
-                plan_type: 'starter'
+                plan_type: 'premium'
               }])
               .select()
             

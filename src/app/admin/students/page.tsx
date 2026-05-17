@@ -95,6 +95,16 @@ export default function StudentsPage() {
         if (acadError) throw acadError
         
         let academyData = academyRows && academyRows[0]
+        if (academyData && academyData.plan_type !== 'premium') {
+          const { data: updatedAcad } = await supabase
+            .from('academies')
+            .update({ plan_type: 'premium' })
+            .eq('id', academyData.id)
+            .select()
+          if (updatedAcad && updatedAcad.length > 0) {
+            academyData = updatedAcad[0]
+          }
+        }
         if (!academyData && profile) {
           console.log('Academy missing on student page, auto-healing academy...');
           const slug = 'academy-' + Math.random().toString(36).substring(2, 7)
@@ -105,7 +115,7 @@ export default function StudentsPage() {
               name: '노티아 학원', 
               slug: slug,
               status: 'active',
-              plan_type: 'starter'
+              plan_type: 'premium'
             }])
             .select()
           

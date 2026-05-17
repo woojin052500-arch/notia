@@ -61,7 +61,7 @@ export default function SignupPage() {
           name: academyName, 
           slug: slug,
           status: 'pending',
-          plan_type: 'starter'
+          plan_type: 'premium'
         }])
 
       if (dbError) {

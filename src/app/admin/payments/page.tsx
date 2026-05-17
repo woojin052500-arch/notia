@@ -11,7 +11,11 @@ import {
   AlertCircle,
   Sparkles,
   ArrowUpRight,
-  ChevronLeft
+  ChevronLeft,
+  BookOpen,
+  Plus,
+  Trash2,
+  Loader2
 } from 'lucide-react'
 
 export default function PaymentManagementPage() {
@@ -20,22 +24,69 @@ export default function PaymentManagementPage() {
   const [aiMessage, setAiMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
+  
+  // Textbook management states
+  const [studentTextbooks, setStudentTextbooks] = useState<any[]>([])
+  const [availableTextbooks, setAvailableTextbooks] = useState<any[]>([])
+  const [selectedTextbookId, setSelectedTextbookId] = useState('')
+  const [dispensing, setDispensing] = useState(false)
+
   const supabase = createClient()
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      setLoading(true)
-      const { data } = await supabase
-        .from('students')
-        .select('*')
-        .order('next_payment_date', { ascending: true })
-      
-      if (data) setStudents(data)
-      setLoading(false)
-    }
-    fetchStudents()
-  }, [supabase])
+  // Fetch student list
+  const fetchStudents = async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('students')
+      .select('*')
+      .order('next_payment_date', { ascending: true })
+    
+    if (data) setStudents(data)
+    setLoading(false)
+  }
 
+  useEffect(() => {
+    fetchStudents()
+  }, [])
+
+  // Fetch student's textbooks when selected student changes
+  useEffect(() => {
+    if (selectedStudent) {
+      const fetchStudentTextbooks = async () => {
+        const { data } = await supabase
+          .from('student_textbooks')
+          .select('*')
+          .eq('student_id', selectedStudent.id)
+          .order('given_at', { ascending: false })
+        setStudentTextbooks(data || [])
+      }
+      fetchStudentTextbooks()
+    }
+  }, [selectedStudent])
+
+  // Fetch all available textbooks for the academy
+  useEffect(() => {
+    const fetchAllTextbooks = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: academyRows } = await supabase
+        .from('academies')
+        .select('*')
+        .eq('owner_id', user.id)
+        .limit(1)
+      const academyData = academyRows && academyRows[0]
+      if (academyData) {
+        const { data } = await supabase
+          .from('textbooks')
+          .select('*')
+          .eq('academy_id', academyData.id)
+        setAvailableTextbooks(data || [])
+      }
+    }
+    fetchAllTextbooks()
+  }, [])
+
+  // Generate AI Reminder Message
   const generateReminder = async (student: any, tone: string) => {
     setGenerating(true)
     setSelectedStudent(student)
@@ -60,8 +111,63 @@ export default function PaymentManagementPage() {
     alert('안내 문구가 복사되었습니다. 학부모님께 전달해 주세요!')
   }
 
+  // Charge a new textbook fee
+  const handleAddTextbookFee = async () => {
+    if (!selectedTextbookId || !selectedStudent) return
+    setDispensing(true)
+    const textbook = availableTextbooks.find(tb => tb.id === selectedTextbookId)
+    if (!textbook) return
+
+    try {
+      const { error } = await supabase
+        .from('student_textbooks')
+        .insert([{
+          student_id: selectedStudent.id,
+          textbook_id: textbook.id,
+          academy_id: selectedStudent.academy_id,
+          textbook_name: textbook.name,
+          textbook_price: textbook.price,
+          is_billed: false
+        }])
+
+      if (error) throw error
+
+      // Refresh student's textbooks list
+      const { data } = await supabase
+        .from('student_textbooks')
+        .select('*')
+        .eq('student_id', selectedStudent.id)
+        .order('given_at', { ascending: false })
+      setStudentTextbooks(data || [])
+      setSelectedTextbookId('')
+      alert('교재비 청구가 완료되었습니다!')
+    } catch (err: any) {
+      alert('교재비 청구 중 오류가 발생했습니다: ' + err.message)
+    } finally {
+      setDispensing(false)
+    }
+  }
+
+  // Delete a textbook charge
+  const handleDeleteTextbookFee = async (id: string) => {
+    if (!confirm('해당 교재비 청구 내역을 삭제하시겠습니까?')) return
+    
+    const { error } = await supabase
+      .from('student_textbooks')
+      .delete()
+      .eq('id', id)
+
+    if (!error) {
+      setStudentTextbooks(prev => prev.filter(t => t.id !== id))
+      alert('교재비 청구가 성공적으로 삭제되었습니다.')
+    } else {
+      alert('교재비 삭제 중 오류가 발생했습니다.')
+    }
+  }
+
+  // Confirm standard tuition fee + textbook payment
   const handleMarkAsPaid = async (student: any) => {
-    if (!confirm(`${student.name} 학생의 원비 수납을 확인하셨습니까?\n결제 예정일이 한 달 뒤로 업데이트됩니다.`)) return
+    if (!confirm(`${student.name} 학생의 원비 및 모든 미청구 교재비 수납을 확인하셨습니까?\n원비 결제 예정일이 1달 뒤로 연장되고 미청구 교재비가 수납 완료 처리됩니다.`)) return
     
     setLoading(true)
     const currentDate = student.next_payment_date ? new Date(student.next_payment_date) : new Date()
@@ -80,16 +186,32 @@ export default function PaymentManagementPage() {
       .eq('student_id', student.id)
       .eq('is_billed', false)
     
+    // Refresh student textbooks
+    if (selectedStudent && selectedStudent.id === student.id) {
+      const { data } = await supabase
+        .from('student_textbooks')
+        .select('*')
+        .eq('student_id', student.id)
+        .order('given_at', { ascending: false })
+      setStudentTextbooks(data || [])
+    }
+    
     if (!error) {
       setStudents(prev => prev.map(s => 
         s.id === student.id ? { ...s, next_payment_date: nextMonth.toISOString().split('T')[0] } : s
       ))
-      alert('수납 처리가 완료되었습니다.')
+      alert('원비 및 교재비 수납 처리가 완료되었습니다.')
     } else {
       alert('수납 처리 중 오류가 발생했습니다.')
     }
     setLoading(false)
   }
+
+  // Cost calculation
+  const unbilledTextbooks = studentTextbooks.filter(tb => !tb.is_billed)
+  const unbilledTextbookSum = unbilledTextbooks.reduce((acc, curr) => acc + curr.textbook_price, 0)
+  const baseTuition = 190000 // 19만원 기본 원비
+  const totalSum = baseTuition + unbilledTextbookSum
 
   return (
     <div className="max-w-7xl mx-auto space-y-12">
@@ -157,7 +279,7 @@ export default function PaymentManagementPage() {
                     <span className={`text-[10px] font-black px-3 py-1.5 rounded-full ${
                       isSelected ? 'bg-white/5 text-gray-400' : 'bg-gray-50 text-gray-500'
                     }`}>
-                      Regular Plan
+                      Premium Plan
                     </span>
                     <div className="flex items-center gap-3">
                       <button 
@@ -180,7 +302,7 @@ export default function PaymentManagementPage() {
           </div>
         </div>
 
-        {/* Right: Smart Payment Assistant */}
+        {/* Right: Smart Payment Assistant & Textbook Fee Billing */}
         <div className={`lg:col-span-2 ${selectedStudent ? 'block' : 'hidden lg:block'}`}>
           {selectedStudent ? (
             <div className="bg-white rounded-[2.5rem] md:rounded-[4rem] border border-gray-100 shadow-sm p-6 md:p-12 space-y-8 md:space-y-10 animate-in fade-in slide-in-from-right-8 duration-700 relative overflow-hidden">
@@ -200,17 +322,119 @@ export default function PaymentManagementPage() {
                     <Sparkles className="w-10 h-10 text-emerald-600 group-hover:rotate-12 transition-transform" />
                   </div>
                   <div>
-                    <h3 className="text-3xl font-black text-gray-900 tracking-tight">{selectedStudent.name} 학생 수납 안내</h3>
-                    <p className="text-sm font-bold text-gray-400">학부모님의 성향과 학생의 성과를 조합한 맞춤형 안내</p>
+                    <h3 className="text-3xl font-black text-gray-900 tracking-tight">{selectedStudent.name} 학생 청구 관리</h3>
+                    <p className="text-sm font-bold text-gray-400">교재비와 기본 수납 원비를 안전하게 합산하고 AI 청구 대본을 생성하세요.</p>
                   </div>
                 </div>
               </div>
 
-              {/* Advanced Tone Selector */}
-              <div className="grid grid-cols-3 gap-4 relative z-10">
-                <ToneButton label="정중하게" onClick={() => generateReminder(selectedStudent, 'polite')} active={generating} />
-                <ToneButton label="친근하게" onClick={() => generateReminder(selectedStudent, 'friendly')} active={generating} />
-                <ToneButton label="명확하게" onClick={() => generateReminder(selectedStudent, 'professional')} active={generating} />
+              {/* Textbook Fee Charging Section */}
+              <div className="bg-[#F8F9FA] rounded-[2.5rem] p-8 border border-gray-100 space-y-6 relative z-10">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-indigo-600" />
+                    교재비 개별 청구
+                  </h4>
+                  <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                    Textbook Billing
+                  </span>
+                </div>
+
+                {/* Billing Summary Box */}
+                <div className="grid grid-cols-3 gap-4 bg-white p-6 rounded-2xl border border-gray-100">
+                  <div className="text-center border-r border-gray-100">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">기본 수업료</p>
+                    <p className="text-lg font-black text-gray-900">{baseTuition.toLocaleString()}원</p>
+                  </div>
+                  <div className="text-center border-r border-gray-100">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">미청구 교재비</p>
+                    <p className="text-lg font-black text-indigo-600">{unbilledTextbookSum.toLocaleString()}원</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">총 청구 합산</p>
+                    <p className="text-lg font-black text-emerald-600">{totalSum.toLocaleString()}원</p>
+                  </div>
+                </div>
+
+                {/* Add Textbook Form */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <select 
+                    value={selectedTextbookId}
+                    onChange={(e) => setSelectedTextbookId(e.target.value)}
+                    className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  >
+                    <option value="">청구할 교재를 선택해 주세요...</option>
+                    {availableTextbooks.map(tb => (
+                      <option key={tb.id} value={tb.id}>
+                        {tb.name} ({tb.price.toLocaleString()}원)
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    disabled={dispensing || !selectedTextbookId}
+                    onClick={handleAddTextbookFee}
+                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 disabled:opacity-50 transition-all active:scale-95 cursor-pointer"
+                  >
+                    {dispensing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        교재 청구 추가
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Student's Textbooks List */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">교재 청구 내역 및 상태</p>
+                  {studentTextbooks.length === 0 ? (
+                    <p className="text-xs text-gray-400 py-4 text-center bg-white rounded-2xl border border-dashed border-gray-200">
+                      청구된 교재가 없습니다.
+                    </p>
+                  ) : (
+                    <div className="max-h-40 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                      {studentTextbooks.map(tb => (
+                        <div key={tb.id} className="flex justify-between items-center bg-white px-5 py-3 rounded-xl border border-gray-100 hover:border-indigo-100 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <span className={`text-[8px] font-black px-2 py-1 rounded-md ${
+                              tb.is_billed 
+                                ? 'bg-green-50 text-green-600 border border-green-100' 
+                                : 'bg-red-50 text-red-600 border border-red-100'
+                            }`}>
+                              {tb.is_billed ? '청구 완료' : '미청구'}
+                            </span>
+                            <span className="text-xs font-bold text-gray-700">{tb.textbook_name}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs font-black text-gray-900">{tb.textbook_price.toLocaleString()}원</span>
+                            {!tb.is_billed && (
+                              <button 
+                                onClick={() => handleDeleteTextbookFee(tb.id)}
+                                className="text-red-400 hover:text-red-600 p-1 rounded-md transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Advanced Tone Selector for AI payment reminder */}
+              <div className="space-y-4">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest relative z-10">
+                  AI 수납 안내 대본 생성 어조
+                </p>
+                <div className="grid grid-cols-3 gap-4 relative z-10">
+                  <ToneButton label="정중하게" onClick={() => generateReminder(selectedStudent, 'polite')} active={generating} />
+                  <ToneButton label="친근하게" onClick={() => generateReminder(selectedStudent, 'friendly')} active={generating} />
+                  <ToneButton label="명확하게" onClick={() => generateReminder(selectedStudent, 'professional')} active={generating} />
+                </div>
               </div>
 
               {/* Premium Message Console */}
@@ -253,7 +477,7 @@ export default function PaymentManagementPage() {
                 <div>
                   <p className="text-[11px] font-black text-blue-800 uppercase tracking-[0.2em] mb-2">Professional Tip</p>
                   <p className="text-sm font-bold text-blue-700/70 leading-relaxed">
-                    본 안내 문구는 학생의 긍정적인 성장을 서두에 언급하여 학부모님의 수납 저항감을 낮추도록 설계되었습니다. 
+                    본 안내 문구는 학생의 긍정적인 성장을 서두에 언급하고 청구된 개별 교재비 합산 내역을 투명하게 안내하여 학부모님의 수납 저항감을 낮추도록 설계되었습니다. 
                     복사 후 카카오톡이나 문자로 간편하게 전달하세요.
                   </p>
                 </div>
@@ -279,7 +503,7 @@ function ToneButton({ label, onClick, active }: any) {
     <button 
       disabled={active}
       onClick={onClick}
-      className="py-5 bg-white border border-gray-100 rounded-[2rem] font-black text-xs text-gray-900 hover:border-blue-600 hover:text-blue-600 hover:shadow-xl hover:shadow-blue-50 transition-all active:scale-95 disabled:opacity-30"
+      className="py-5 bg-white border border-gray-100 rounded-[2rem] font-black text-xs text-gray-900 hover:border-blue-600 hover:text-blue-600 hover:shadow-xl hover:shadow-blue-50 transition-all active:scale-95 disabled:opacity-30 cursor-pointer"
     >
       {label}
     </button>
