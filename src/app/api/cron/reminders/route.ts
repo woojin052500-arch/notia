@@ -117,8 +117,9 @@ export async function GET(req: Request) {
 
     if (studentError) throw studentError
 
-    for (const student of (targetStudents || [])) {
-      const academyName = student.academies?.name || '노티아 학원'
+    for (const student of (targetStudents || []) as any[]) {
+      const academyData = student.academies
+      const academyName = (Array.isArray(academyData) ? academyData[0]?.name : academyData?.name) || '노티아 학원'
       const daysLeft = student.next_payment_date === targetDate5DaysStr ? 5 : 1
 
       // 해당 학생의 미청구 교재비 조회 및 합산
